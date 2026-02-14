@@ -1,0 +1,200 @@
+\documentclass[a4paper,12pt]{article}
+
+% --- PACCHETTI FONDAMENTALI ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}     % Lingua Italiana
+\usepackage{graphicx}           % Per le immagini
+\usepackage{float}              % Per fissare le immagini dove vuoi tu
+\usepackage{hyperref}           % Per i link cliccabili nel PDF
+\usepackage{geometry}           % Margini del foglio
+\usepackage{setspace}           % Interlinea
+\usepackage{xcolor}             % Colori
+\usepackage{listings}           % Per mostrare il codice Python bello colorato
+\usepackage{tikz}               % Per elementi grafici decorativi
+
+% --- CONFIGURAZIONE MARGINI ---
+\geometry{
+    top=2.5cm,
+    bottom=2.5cm,
+    left=2.5cm,
+    right=2.5cm
+}
+\onehalfspacing % Interlinea 1.5 (Standard accademico)
+
+% --- CONFIGURAZIONE PERCORSO IMMAGINI ---
+\graphicspath{{images/}} 
+
+% --- COLORI ISTITUZIONALI (palette dal logo Signify) ---
+\definecolor{signifyteal}{RGB}{0, 165, 168}     % Teal/Ciano dal logo
+\definecolor{signifypurple}{RGB}{91, 45, 142}   % Viola profondo dal logo
+\definecolor{signifyblue}{RGB}{46, 107, 158}    % Blu intermedio gradiente
+\definecolor{unisablue}{RGB}{0, 51, 102}        % Blu scuro istituzionale
+\definecolor{accentteal}{RGB}{0, 150, 160}      % Teal per hyperref
+
+% --- STILE CODICE PYTHON (Per farlo sembrare VS Code) ---
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    frame=single % Cornice attorno al codice
+}
+\lstset{style=mystyle}
+
+% --- CONFIGURAZIONE HYPERREF ---
+\hypersetup{
+    colorlinks=true,
+    linkcolor=signifyblue,
+    urlcolor=accentteal,
+    citecolor=signifyblue,
+    pdfauthor={Antonio Walter De Fusco},
+    pdftitle={Signify: Sistema di Sign Language Recognition Real-Time},
+    pdfsubject={Progetto di Machine Learning},
+}
+
+% --- INIZIO DEL DOCUMENTO ---
+\begin{document}
+
+% ============================================================
+% FRONTESPIZIO ISTITUZIONALE
+% ============================================================
+\begin{titlepage}
+    \begin{center}
+        
+        % --- Logo Università ---
+        \includegraphics[width=3.8cm]{logo_unisa}
+        
+        \vspace{0.5cm}
+        
+        % --- Nome Università ---
+        {\Large \textsc{Università degli Studi di Salerno}}
+        
+        \vspace{0.3cm}
+        
+        % --- Dipartimento ---
+        {\large \textsc{Dipartimento di Informatica}}
+        
+        \vspace{0.2cm}
+        
+        % --- Corso di Laurea ---
+        {\normalsize Corso di Laurea in Informatica}
+        
+        \vspace{0.4cm}
+        
+        % --- Linea decorativa superiore ---
+        {\color{signifyteal}\rule{\textwidth}{1.5pt}}
+        
+        \vspace{0.3cm}
+        
+        % --- Tipo Documento ---
+        {\large \textsc{Progetto di Machine Learning}}
+        
+        \vspace{0.2cm}
+        
+        {\small Anno Accademico 2024--2025}
+        
+        \vspace{0.8cm}
+        
+        % --- Titolo Principale ---
+        {\Huge \textbf{\color{signifyblue}Signify}}
+        
+        \vspace{0.3cm}
+        
+        {\LARGE \textit{Voices Through Hands}}
+        
+        \vspace{0.4cm}
+        
+        % --- Sottotitolo ---
+        {\large Sistema di Sign Language Recognition Real-Time\\
+        basato su Computer Vision e Deep Learning}
+        
+        \vspace{0.6cm}
+        
+        % --- Logo App ---
+        \includegraphics[width=4.5cm]{logo_signify}
+        
+        \vspace{0.6cm}
+        
+        % --- Linea decorativa inferiore ---
+        {\color{signifypurple}\rule{\textwidth}{1.5pt}}
+        
+        \vspace{0.8cm}
+        
+        % --- Sezione Autori e Docente ---
+        \begin{minipage}[t]{0.48\textwidth}
+            \begin{flushleft}
+                {\small \textsc{Docenti}}\\[4pt]
+                {\normalsize \textbf{Prof. Giuseppe Polese}}\\
+                {\normalsize \textbf{Prof.ssa Loredana Caruccio}}
+            \end{flushleft}
+        \end{minipage}
+        \hfill
+        \begin{minipage}[t]{0.48\textwidth}
+            \begin{flushright}
+                {\small \textsc{Studente}}\\[4pt]
+                {\normalsize \textbf{Antonio Walter De Fusco}}\\
+                {\normalsize Matricola: 0512119006}
+            \end{flushright}
+        \end{minipage}
+        
+        \vfill
+        
+        % --- Linea sottile finale ---
+        {\color{signifyblue}\rule{0.5\textwidth}{0.4pt}}
+        
+        \vspace{0.3cm}
+        
+        % --- Data ---
+        {\small Febbraio 2025}
+        
+    \end{center}
+\end{titlepage}
+
+% ============================================================
+% INDICE
+% ============================================================
+\tableofcontents
+\thispagestyle{empty}
+\newpage
+\setcounter{page}{1}
+
+% ============================================================
+% CAPITOLI
+% ============================================================
+\input{chapters/01_intro}
+
+\newpage
+\input{chapters/02_dataset}
+
+\newpage
+\input{chapters/03_preprocessing}
+
+\newpage
+\input{chapters/04_analisi}
+
+% ============================================================
+% BIBLIOGRAFIA
+% ============================================================
+\newpage
+\bibliographystyle{unsrt}
+\bibliography{references}
+
+\end{document}
