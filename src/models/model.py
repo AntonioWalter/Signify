@@ -124,15 +124,20 @@ class LSTMAttention(nn.Module):
 
         # Layer di Attention: calcola i pesi di importanza per ogni frame
         self.attention = AttentionLayer(lstm_output_size)
-
-        # Classificatore finale: mappa il vettore di contesto nelle classi
-        # Uso un piccolo MLP con dropout per evitare overfitting
+        
+        # Projection Head Avanzata (Super LSTM v2)
+        # Aumentiamo la profondità per migliorare la separabilità delle 2344 classi
         self.classifier = nn.Sequential(
             nn.Dropout(dropout),
-            nn.Linear(lstm_output_size, hidden_size),
+            nn.Linear(lstm_output_size, hidden_size * 2),  # Expand capacity
+            nn.BatchNorm1d(hidden_size * 2),               # Normalize activations
             nn.ReLU(),
             nn.Dropout(dropout),
-            nn.Linear(hidden_size, num_classes)
+            nn.Linear(hidden_size * 2, hidden_size),       # Compress features
+            nn.BatchNorm1d(hidden_size),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_size, num_classes)            # Final classification
         )
 
     def forward(self, x):
@@ -162,42 +167,146 @@ class LSTMAttention(nn.Module):
         return output, attention_weights
 
 
+
+class PositionalEncoding(nn.Module):
+    """
+    Inietta informazioni sulla posizione temporale nel modello Transformer.
+    Poiché il Transformer non ha ricorrenza, non sa "dove" si trova un frame
+    nella sequenza (inizio, centro, fine) senza questo encoding.
+    """
+    def __init__(self, d_model, max_len=5000, dropout=0.1):
+        super(PositionalEncoding, self).__init__()
+        self.dropout = nn.Dropout(p=dropout)
+
+        # Creazione della matrice di encoding una volta sola
+        pe = torch.zeros(max_len, d_model)
+        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
+        # Termini sinusoidali a frequenze diverse
+        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-torch.log(torch.tensor(10000.0)) / d_model))
+        
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        
+        # Aggiungiamo la dimensione batch: (1, max_len, d_model)
+        pe = pe.unsqueeze(0)
+        
+        # Buffer: stato non addestrabile che viene salvato col modello
+        self.register_buffer('pe', pe)
+
+    def forward(self, x):
+        """
+        Args:
+            x: input embedding, shape (batch_size, seq_len, d_model)
+        """
+        # Aggiungiamo l'encoding posizionale all'input
+        x = x + self.pe[:, :x.size(1)]
+        return self.dropout(x)
+
+
+class SignTransformer(nn.Module):
+    """
+    Modello Transformer per il riconoscimento dei segni (SignFormer).
+    
+    Architettura:
+    1. Input Projection: Mappa landmarks (258) -> Model Dimension (es. 256)
+    2. Positional Encoding: Aggiunge info temporali
+    3. Transformer Encoder: N layer di Self-Attention e Feed-Forward
+    4. Classification Head: Mappa l'output (medio o [CLS]) -> Classi
+    """
+    def __init__(self, input_dim=258, model_dim=256, num_classes=2344, 
+                 num_heads=8, num_layers=4, dropout=0.1, max_len=100):
+        super(SignTransformer, self).__init__()
+        
+        self.model_dim = model_dim
+        
+        # 1. Proiezione lineare dell'input (Feature Embedding)
+        self.input_projection = nn.Linear(input_dim, model_dim)
+        
+        # 2. Positional Encoding
+        self.pos_encoder = PositionalEncoding(model_dim, max_len=max_len, dropout=dropout)
+        
+        # 3. Transformer Encoder Layer
+        # batch_first=True: input shape (batch, seq, feature)
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=model_dim, 
+            nhead=num_heads, 
+            dim_feedforward=model_dim * 4, 
+            dropout=dropout,
+            batch_first=True
+        )
+        self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
+        
+        # 4. Classificatore finale
+        self.classifier = nn.Sequential(
+            nn.Linear(model_dim, model_dim // 2),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(model_dim // 2, num_classes)
+        )
+
+    def forward(self, x):
+        """
+        Args:
+            x: input sequence (batch_size, seq_len, input_dim)
+        """
+        # Proiezione input: (batch, seq, 258) -> (batch, seq, 256)
+        x = self.input_projection(x)
+        
+        # Scaling richiesto dall'architettura originale del Transformer ("Attention is All You Need")
+        x = x * torch.sqrt(torch.tensor(self.model_dim, dtype=torch.float32).to(x.device))
+        
+        # Aggiunta encoding posizionale
+        x = self.pos_encoder(x)
+        
+        # Passaggio nel Transformer Encoder
+        # Output: (batch, seq, model_dim)
+        x = self.transformer_encoder(x)
+        
+        # Global Average Pooling: facciamo la media su tutti i frame temporali
+        # Un'alternativa è usare solo l'ultimo frame o un token [CLS] speciale, 
+        # ma GAP funziona bene per l'action recognition.
+        # (batch, seq, model_dim) -> (batch, model_dim)
+        context = x.mean(dim=1)
+        
+        # Classificazione
+        output = self.classifier(context)
+        
+        return output, None  # Ritorniamo None per compatibilità con l'interfaccia train (no attention weights espliciti per ora)
+
+
 # Blocco di test: verifica che il modello funzioni correttamente
 if __name__ == "__main__":
     print("=" * 60)
-    print("TEST DEL MODELLO")
+    print("TEST DEL MODELLO (SignTransformer)")
     print("=" * 60)
 
     # Parametri del modello
-    INPUT_SIZE = 258     # Numero di landmark per frame
-    HIDDEN_SIZE = 128    # Dimensione stato nascosto LSTM
+    INPUT_DIM = 258      # Numero di landmark per frame
+    MODEL_DIM = 256      # Dimensione interna del modello
     NUM_CLASSES = 2344   # Numero di segni ASL
     BATCH_SIZE = 4       # Dimensione del batch di test
     MAX_FRAMES = 30      # Numero di frame per sequenza
+    NUM_HEADS = 8        # Testine di attention
+    NUM_LAYERS = 4       # Numero di layer encoder
 
     # Creazione del modello
-    model = LSTMAttention(
-        input_size=INPUT_SIZE,
-        hidden_size=HIDDEN_SIZE,
-        num_classes=NUM_CLASSES
+    model = SignTransformer(
+        input_dim=INPUT_DIM,
+        model_dim=MODEL_DIM,
+        num_classes=NUM_CLASSES,
+        num_heads=NUM_HEADS,
+        num_layers=NUM_LAYERS
     )
 
     # Input di test: batch di sequenze casuali
-    test_input = torch.randn(BATCH_SIZE, MAX_FRAMES, INPUT_SIZE)
+    test_input = torch.randn(BATCH_SIZE, MAX_FRAMES, INPUT_DIM)
     print(f"\nInput shape: {test_input.shape}")
 
     # Forward pass
-    output, attention_weights = model(test_input)
+    output, _ = model(test_input)
     print(f"Output shape: {output.shape}")              # Atteso: (4, 2344)
-    print(f"Attention shape: {attention_weights.shape}")  # Atteso: (4, 30)
-
-    # Verifica che i pesi di attention sommino a 1 per ogni campione
-    attn_sums = attention_weights.sum(dim=1)
-    print(f"Somma pesi attention: {attn_sums}")          # Atteso: ~1.0 per ogni campione
 
     # Conta dei parametri del modello
     total_params = sum(p.numel() for p in model.parameters())
-    trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f"\nParametri totali: {total_params:,}")
-    print(f"Parametri addestrabili: {trainable_params:,}")
     print("=" * 60)

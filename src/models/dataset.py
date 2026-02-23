@@ -116,57 +116,87 @@ class SignLanguageDataset(Dataset):
 
     def _normalize_length(self, sequence):
         """
-        Normalizza la sequenza a esattamente max_frames frame.
-
-        Se il video ha meno frame del necessario, aggiungiamo righe di zeri
-        alla fine (zero-padding). Se ne ha di più, tronchiamo gli ultimi frame.
-
-        Args:
-            sequence: array numpy di shape (num_frames, 258)
-
-        Returns:
-            array numpy di shape (max_frames, 258)
+        Normalizza la sequenza tramite campionamento uniforme (Resampling).
+        Questo metodo preserva l'intero movimento del video, campionando
+        punti equidistanti, invece di troncare la fine.
         """
-        num_frames, num_features = sequence.shape
-
-        if num_frames >= self.max_frames:
-            # Troncamento: prendiamo solo i primi max_frames frame
-            return sequence[:self.max_frames]
-        else:
-            # Padding: aggiungiamo righe di zeri per raggiungere max_frames
-            padding = np.zeros((self.max_frames - num_frames, num_features))
-            return np.vstack([sequence, padding])
+        num_frames = sequence.shape[0]
+        
+        # Generiamo indici equidistanti (es. 0, 2.5, 5 -> 0, 2, 5)
+        # Questo gestisce sia downsampling (se video > max_frames)
+        # che upsampling (se video < max_frames) duplicando frame vicini.
+        indices = np.linspace(0, num_frames - 1, self.max_frames).round().astype(int)
+        
+        return sequence[indices]
 
     def _augment(self, sequence):
         """
-        Applica trasformazioni casuali alla sequenza per aumentare la varietà dei dati.
-
-        Tecniche utilizzate:
-        1. Rumore gaussiano: aggiunge piccole perturbazioni casuali ai valori
-        2. Scaling: moltiplica i valori per un fattore casuale vicino a 1
-
-        Args:
-            sequence: array numpy di shape (max_frames, 258)
-
-        Returns:
-            array numpy con le trasformazioni applicate
+        Applica data augmentation aggressiva (Super LSTM v2).
         """
-        # Rumore gaussiano con probabilità del 50%
-        # Simula piccole variazioni naturali nel tracciamento dei landmark
+        # 1. Non-Linear Time Warping (Elasticità temporale)
+        # Simula variazioni di velocità locali (es. inizio lento, fine veloce)
         if np.random.random() < 0.5:
-            noise = np.random.normal(0, 0.005, sequence.shape)
+            sequence = self._non_linear_time_warp(sequence)
+
+        # 2. Rumore Gaussiano
+        if np.random.random() < 0.5:
+            noise = np.random.normal(0, 0.01, sequence.shape)
             sequence = sequence + noise
 
-        # Scaling casuale con probabilità del 50%
-        # Simula variazioni nella distanza dalla telecamera
+        # 3. Scaling
         if np.random.random() < 0.5:
-            scale = np.random.uniform(0.95, 1.05)
+            scale = np.random.uniform(0.85, 1.15)
             sequence = sequence * scale
 
+        # 4. Random Masking
+        if np.random.random() < 0.3:
+            mask = np.random.random(sequence.shape) > 0.1
+            sequence = sequence * mask
+        
         return sequence
 
+    def _non_linear_time_warp(self, sequence):
+        """
+        Applica una deformazione temporale non lineare (Time Warping).
+        Genera una curva temporale distorta per ricampionare il segnale.
+        """
+        num_frames = sequence.shape[0]
+        num_features = sequence.shape[1]
+        
+        # Punti di controllo per la distorsione temporale
+        # [0, ..., N-1] mappa identity. Noi spostiamo i punti interni.
+        # Es: 30 frame -> punti su 0, 10, 20, 29. Muoviamo 10 e 20.
+        
+        # Creiamo una griglia temporale distorta
+        old_time = np.linspace(0, num_frames - 1, num_frames)
+        
+        # Generiamo random shift per i punti centrali della curva temporale
+        # Per semplicità, usiamo una curva quadratica o cubica tramite interpolazione
+        n_controls = 5
+        controls_x = np.linspace(0, num_frames - 1, n_controls)
+        controls_y = np.linspace(0, num_frames - 1, n_controls)
+        
+        # Perturbiamo i controlli interni (non gli estremi)
+        controls_y[1:-1] += np.random.uniform(-num_frames/5, num_frames/5, size=n_controls-2)
+        controls_y = np.clip(controls_y, 0, num_frames - 1)
+        controls_y = np.sort(controls_y) # Il tempo deve essere monotono!
+        
+        # Interpoliamo la nuova griglia temporale
+        new_time = np.interp(old_time, controls_x, controls_y)
+        
+        # Ricampioniamo le feature sulla nuova griglia (Vettorializzato)
+        # Sostituisce il lento ciclo for con operazioni numpy broadcasted
+        indices_floor = np.floor(new_time).astype(int)
+        indices_ceil = np.clip(indices_floor + 1, 0, num_frames - 1)
+        weights = (new_time - indices_floor)[:, np.newaxis] # Shape (30, 1) per broadcasting
+        
+        # Linear Interpolation: (1-w)*p0 + w*p1
+        new_sequence = (1 - weights) * sequence[indices_floor] + weights * sequence[indices_ceil]
+            
+        return new_sequence
 
-def create_data_loaders(data_dir, batch_size=32, max_frames=30, val_size=0.15):
+
+def create_data_loaders(data_dir, batch_size=32, max_frames=30, val_size=0.15, num_workers=2):
     """
     Crea i DataLoader per training e validazione.
 
@@ -184,6 +214,7 @@ def create_data_loaders(data_dir, batch_size=32, max_frames=30, val_size=0.15):
         batch_size: numero di campioni per batch
         max_frames: numero fisso di frame per sequenza
         val_size: proporzione del dataset per la validazione (default: 15%)
+        num_workers: numero di sottoprocessi per il caricamento dati
 
     Returns:
         train_loader: DataLoader per il training
@@ -222,15 +253,17 @@ def create_data_loaders(data_dir, batch_size=32, max_frames=30, val_size=0.15):
         train_dataset,
         batch_size=batch_size,
         shuffle=True,        # Mescoliamo i dati ad ogni epoca (solo training)
-        num_workers=2,       # Processi paralleli per il caricamento
-        pin_memory=True      # Ottimizzazione per il trasferimento CPU -> GPU
+        num_workers=num_workers,
+        pin_memory=True,      # Ottimizzazione per il trasferimento CPU -> GPU
+        persistent_workers=(num_workers > 0) # Mantiene i worker vivi tra le epoche (Fix Lag Windows)
     )
     val_loader = DataLoader(
         val_dataset,
         batch_size=batch_size,
         shuffle=False,
-        num_workers=2,
-        pin_memory=True
+        num_workers=num_workers,
+        pin_memory=True,
+        persistent_workers=(num_workers > 0)
     )
 
     return train_loader, val_loader, full_dataset

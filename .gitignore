@@ -1,11 +1,13 @@
 # === DATA & MODELS (too large for git) ===
 data/
 models_saved/
+checkpoints/
 *.npy
 *.mp4
 *.zip
 *.h5
 *.keras
+*.pt
 
 # === PYTHON ===
 __pycache__/
