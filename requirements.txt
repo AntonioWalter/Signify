@@ -1,7 +1,9 @@
-torch
-numpy
-scikit-learn
-tqdm
-matplotlib
-opencv-python
-mediapipe
+# Signify - LSTM+Attention requirements
+torch>=2.0.0
+numpy>=1.24.0
+pandas>=2.0.0
+scikit-learn>=1.2.0
+matplotlib>=3.7.0
+tqdm>=4.65.0
+opencv-python>=4.8.0
+mediapipe==0.10.14

@@ -30,7 +30,7 @@ In totale, per ogni frame si ottiene un vettore di $132 + 63 + 63 = \mathbf{258}
 
 \subsection{Il Processo di Estrazione}
 
-Lo script di estrazione (\texttt{extract\_landmarks.py}) elabora i video secondo i seguenti passi:
+Il Jupyter notebook di estrazione (\texttt{Extract\_Landmarks.ipynb}) elabora i video secondo i seguenti passi:
 
 \begin{enumerate}
     \item \textbf{Caricamento del CSV:} viene letto il file \texttt{train.csv} dal dataset ASL Citizen, che contiene per ogni riga il nome del file video e il \textit{gloss} (etichetta) corrispondente.
@@ -64,7 +64,7 @@ def extract_keypoints(results):
 
 \subsection{Parallelizzazione}
 
-Data la mole di video da elaborare, lo script utilizza il modulo \texttt{multiprocessing} di Python per distribuire il lavoro su più core della CPU. Ogni \textit{worker} elabora un video in modo indipendente, inizializzando la propria istanza di MediaPipe Holistic. Lo script supporta anche il \textbf{resume}: se un file \texttt{.npy} esiste già, il video corrispondente viene saltato, permettendo di riprendere l'elaborazione dopo un'interruzione.
+Data la mole di video da elaborare, il notebook utilizza il modulo \texttt{multiprocessing} di Python per distribuire il lavoro su più core della CPU. Ogni \textit{worker} elabora un video in modo indipendente, inizializzando la propria istanza di MediaPipe Holistic. Il notebook supporta anche il \textbf{resume}: se un file \texttt{.npy} esiste già, il video corrispondente viene saltato, permettendo di riprendere l'elaborazione dopo un'interruzione.
 
 \subsection{Risultati dell'Estrazione}
 

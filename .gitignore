@@ -1,43 +1,52 @@
-# === DATA & MODELS (too large for git) ===
-data/
-models_saved/
-checkpoints/
-*.npy
-*.mp4
-*.zip
-*.h5
-*.keras
-*.pt
+# Ambienti Virtuali Python
+venv/
+.venv/
+venv310/
+env/
+.venv_eval/
 
-# === PYTHON ===
+# Artifacts di Python
 __pycache__/
 *.py[cod]
-.venv/
-venv/
-.env
+*$py.class
+*.so
 
-# === IDE ===
+# Cartelle IDE
 .idea/
 .vscode/
-.DS_Store
 
-# === LATEX (build artifacts, not source) ===
-docs/latex/*.aux
-docs/latex/*.log
-docs/latex/*.out
-docs/latex/*.toc
-docs/latex/*.bbl
-docs/latex/*.blg
-docs/latex/*.synctex.gz
-docs/latex/*.fdb_latexmk
-docs/latex/*.fls
-docs/latex/*.nav
-docs/latex/*.snm
-docs/latex/*.vrb
+# Dati pesanti / ML Artifacts
+data/*
+!data/.gitkeep
+models_saved/
+results/
+notebooks/.ipynb_checkpoints/
 
-# === KEEP the compiled PDF ===
-# main.pdf is tracked so reviewers can read the thesis without compiling
-
-# === LOGS ===
+# LaTeX / Build
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.ilg
+*.ind
+*.lof
 *.log
-extraction_log_*.log
+*.lot
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+docs/main.pdf
+docs/latex/build/
+
+# Log e Zip
+*.log
+*.zip
+*.txt
+!requirements.txt
+!requirements_mac.txt
+
+# File Mac
+.DS_Store
