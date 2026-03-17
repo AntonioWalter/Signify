@@ -1,0 +1,222 @@
+% ============================================================
+% CAPITOLO 4 - ANALISI E BILANCIAMENTO DEL DATASET
+% ============================================================
+
+\section{Analisi e Bilanciamento del Dataset}
+
+Prima di procedere con l'addestramento di un modello di Machine Learning, è fondamentale analizzare la composizione del dataset estratto per identificare potenziali fonti di \textit{bias}, sbilanciamenti e anomalie. Un dataset non curato può portare a fenomeni di \textit{overfitting} (il modello memorizza i dati anziché generalizzare) o \textit{underfitting} (il modello non riesce ad apprendere pattern significativi). In questa sezione viene presentata l'analisi completa dei dati estratti nel capitolo precedente e le operazioni di pulizia effettuate per garantire la qualità del dataset.
+
+\subsection{Composizione Attuale del Dataset}
+
+Il dataset di addestramento corrisponde al dataset estratto composto da \textbf{40.105 file .npy} distribuiti su \textbf{2.730 classi} (segni distinti), per un totale di \textbf{3.458.743 frame} analizzati. Attraverso un Jupyter notebook di analisi (\texttt{Analyze\_Dataset.ipynb}) sono state ricavate le seguenti osservazioni.
+
+\subsubsection{Distribuzione dei Campioni per Classe}
+
+La distribuzione del numero di campioni per classe è riportata in Figura~\ref{fig:distribuzione_campioni}. Il dataset risulta relativamente bilanciato: la media è di \textbf{14.7 campioni per classe} con una deviazione standard di soli 1.4, e la mediana si attesta a 15. La maggior parte delle classi possiede tra 13 e 16 campioni.
+
+Tuttavia, sono state individuate delle eccezioni rilevanti:
+\begin{itemize}
+    \item \textbf{2 classi completamente vuote} (\texttt{HURDLE} e \texttt{THIS}), presumibilmente a causa di errori durante l'estrazione.
+    \item \textbf{19 classi con 10 o meno campioni}, significativamente sotto la media.
+    \item \textbf{5 classi con oltre 20 campioni}, sopra la media.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{distribuzione_campioni_per_classe}
+    \caption{Distribuzione del numero di campioni per classe. La linea rossa indica la media (14.7), quella arancione la mediana (15).}
+    \label{fig:distribuzione_campioni}
+\end{figure}
+
+Le classi con il minor e il maggior numero di campioni sono visualizzate in Figura~\ref{fig:top_bottom}. Le classi sotto-rappresentate possono introdurre \textit{bias} nel modello, poiché il classificatore avrebbe meno esempi da cui apprendere i pattern di quei segni.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{top_bottom_classi}
+    \caption{Le 30 classi con meno campioni (rosso, a sinistra) e le 30 classi con più campioni (verde, a destra).}
+    \label{fig:top_bottom}
+\end{figure}
+
+L'analisi della durata temporale delle sequenze landmark (Figura~\ref{fig:distribuzione_frame}) rivela una distribuzione asimmetrica con una marcata "coda lunga" verso destra. Sebbene la maggior parte dei segni abbia una durata contenuta (mediana di 75 frame), il dataset include esecuzioni eccezionalmente lunghe che raggiungono i 680 frame.
+
+\begin{itemize}
+    \item \textbf{Valori centrali:} la media si attesta a 86.2 frame, con una concentrazione principale tra i 40 e i 100 frame ($\approx$ 1.5--3 secondi).
+    \item \textbf{Orizzonte pratico (95° percentile):} il 95\% dei campioni termina entro i 168 frame. Questo valore è cruciale per definire la strategia di campionamento: indica che una lunghezza target di 30 frame permette di catturare l'essenza dinamica del segno senza perdite eccessive di informazione, normalizzando la varianza tra segni rapidi e segni molto prolungati.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{distribuzione_frame}
+    \caption{Analisi statistica della lunghezza dei video. L'istogramma evidenzia come la quasi totalità dei dati (95\%) rientri sotto i 168 frame, supportando la scelta di una normalizzazione temporale fissa.}
+    \label{fig:distribuzione_frame}
+\end{figure}
+
+\subsubsection{Landmark Mancanti: Prima Osservazione}
+
+L'analisi dei landmark mancanti (Figura~\ref{fig:landmark_mancanti}) ha prodotto un risultato inizialmente allarmante:
+
+\begin{itemize}
+    \item \textbf{Pose (corpo):} solo lo 0.1\% dei frame presenta landmark a zero --- un valore trascurabile.
+    \item \textbf{Mano sinistra:} il 71.4\% dei frame non presenta landmark rilevati.
+    \item \textbf{Mano destra:} il 63.0\% dei frame non presenta landmark rilevati.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{landmark_mancanti}
+    \caption{Percentuale di frame con componente landmark completamente a zero. Le mani risultano non rilevate nella maggioranza dei frame.}
+    \label{fig:landmark_mancanti}
+\end{figure}
+
+A prima vista, queste percentuali suggerirebbero un problema grave nel rilevamento. Tuttavia, riflettendo sulla natura della lingua dei segni americana, è stata formulata un'ipotesi diversa: \textbf{molti segni ASL sono eseguiti con una sola mano}. La mano non impegnata nel segno rimane naturalmente a riposo, e MediaPipe correttamente non rileva landmark per essa. La differenza tra mano sinistra (71.4\%) e mano destra (63.0\%) è coerente con questa ipotesi: la mano destra, essendo quella dominante per la maggior parte dei firmatari, viene attivata più frequentemente.
+
+Questa osservazione ha portato allo sviluppo di un'analisi di coerenza più raffinata, descritta nella sezione successiva.
+
+% ============================================================
+\subsection{Analisi di Coerenza per Classe e per Signer}
+
+Per distinguere i \textbf{dati mancanti reali} (errori di MediaPipe) dai \textbf{dati mancanti attesi} (segni a una mano), è stata sviluppata un'analisi in due fasi: prima a livello di classe, poi a livello di signer.
+
+\subsubsection{Fase 1: Pattern Dominante per Classe}
+
+Per ogni classe (segno), ogni istanza è stata classificata in base al pattern di utilizzo delle mani:
+
+\begin{itemize}
+    \item \textbf{ENTRAMBE:} entrambe le mani presentano landmark in almeno il 20\% dei frame.
+    \item \textbf{SOLO\_DX:} solo la mano destra è attiva.
+    \item \textbf{SOLO\_SX:} solo la mano sinistra è attiva.
+    \item \textbf{NESSUNA:} nessuna mano rilevata in modo significativo.
+\end{itemize}
+
+Per ciascuna classe, il \textit{pattern dominante} è quello condiviso dalla maggioranza delle istanze. Le istanze il cui pattern differisce da quello dominante della propria classe sono state marcate come anomale.
+
+\subsubsection{Fase 2: Il Problema della Mano Dominante}
+
+L'analisi iniziale ha identificato 5.815 istanze anomale su 40.105 (14.5\%). Tuttavia, è stato notato che molte di queste anomalie riguardavano classi a una sola mano in cui alcune istanze usavano la mano \textit{opposta}. Ad esempio, in una classe con pattern dominante SOLO\_DX, alcune istanze mostravano SOLO\_SX.
+
+A questo punto è emersa un'evidenza fondamentale: \textbf{non tutti i firmatari sono destrorsi}. Un firmatario mancino esegue naturalmente un segno ``a una mano'' con la mano sinistra, mentre un destrorso usa la destra. Entrambe le esecuzioni sono corrette --- il segno ha lo stesso significato indipendentemente dalla mano utilizzata.
+
+Per verificare questa ipotesi, i dati sono stati incrociati con il file \texttt{train.csv} del dataset ASL Citizen, che contiene l'identificativo del partecipante (\texttt{Participant ID}) per ogni video. Per ciascuno dei 35 firmatari nel training set, è stato analizzato il rapporto tra segni eseguiti con la mano destra e segni eseguiti con la sinistra, inferendo così la \textbf{mano dominante} di ciascun partecipante.
+
+\begin{center}
+\begin{tabular}{lrrr}
+\hline
+\textbf{Signer} & \textbf{Video DX} & \textbf{Video SX} & \textbf{Dominante} \\
+\hline
+P16 & 1 & 709 & Mancino \\
+P40 & 166 & 718 & Mancino \\
+P43 & 10 & 240 & Mancino \\
+P4  & 27 & 106 & Mancino \\
+P8  & 5 & 32 & Mancino \\
+P44 & 0 & 13 & Mancino \\
+P41 & 0 & 2 & Mancino \\
+\hline
+\textit{Altri 28 signer} & & & Destrorso \\
+\hline
+\end{tabular}
+\end{center}
+
+Questa analisi ha rivelato che \textbf{7 dei 35 firmatari sono mancini} (20\%), un dato perfettamente coerente con le statistiche della popolazione generale (circa il 10-15\% della popolazione è mancina, con percentuali più alte tra i maschi giovani).
+
+\subsubsection{Classificazione degli Errori}
+
+Grazie all'inferenza della mano dominante, è stato possibile classificare le anomalie con precisione:
+
+\begin{enumerate}
+    \item \textbf{Errori certi di rilevamento} (3.250 istanze): istanze in cui il pattern è incompatibile con la natura del segno, indipendentemente dal signer:
+    \begin{itemize}
+        \item 2.782 istanze in classi a \textit{due mani} dove MediaPipe ha rilevato \textit{una sola o nessuna mano} --- in questi casi la seconda mano era necessaria per il segno ma non è stata rilevata.
+        \item 468 istanze in classi a \textit{una mano} dove \textit{nessuna mano} è stata rilevata --- un fallimento completo del rilevamento.
+    \end{itemize}
+
+    \item \textbf{Errori di mano errata} (172 istanze): istanze in cui la mano rilevata è \textit{incoerente con la lateralità del signer}. Ad esempio, un firmatario destrorso (che usa la mano destra in centinaia di altri video) che risulta usare la mano sinistra in un singolo segno a una mano --- un chiaro errore di rilevamento.
+
+    \item \textbf{Istanze valide di signer mancini} (1.823 istanze): inizialmente marcate come anomale, ma riconosciute come corrette dopo aver verificato la coerenza con la mano dominante del signer. Un firmatario mancino che esegue un segno con la mano sinistra produce un dato perfettamente valido.
+
+    \item \textbf{Classe da eliminare} (1): la classe \texttt{SIDE}, il cui pattern dominante è ``NESSUNA mano'', indicando che MediaPipe non è riuscito a rilevare le mani nella maggioranza dei video di quel segno.
+\end{enumerate}
+
+\subsection{Pulizia del Dataset}
+
+A seguito dell'analisi, si è proceduto alla rimozione degli elementi identificati come errati:
+
+\begin{itemize}
+    \item \textbf{3 classi eliminate completamente}: \texttt{HURDLE} e \texttt{THIS} (vuote fin dall'estrazione) e \texttt{SIDE} (pattern dominante ``NESSUNA'').
+    \item \textbf{3.422 istanze eliminate}: 3.250 errori certi + 172 errori di mano errata.
+    \item \textbf{1.823 istanze salvate}: riconosciute come valide grazie all'analisi per signer.
+\end{itemize}
+
+Il dataset risultante dopo la pulizia contiene:
+
+\begin{center}
+\begin{tabular}{lr}
+\hline
+\textbf{Metrica} & \textbf{Valore} \\
+\hline
+Classi (segni distinti) & 2.727 \\
+Campioni totali & 36.668 \\
+Media campioni per classe & 13.4 \\
+Mediana campioni per classe & 14 \\
+Deviazione standard & 1.9 \\
+Minimo campioni & 4 \\
+Massimo campioni & 23 \\
+\hline
+\end{tabular}
+\end{center}
+
+La distribuzione dei campioni per classe dopo la pulizia è mostrata in Figura~\ref{fig:distribuzione_post_pulizia}. Si nota un leggero spostamento verso sinistra della distribuzione, dovuto alla rimozione delle istanze errate, ma la forma complessiva resta bilanciata.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{distribuzione_post_pulizia}
+    \caption{Distribuzione dei campioni per classe dopo la pulizia degli errori di rilevamento.}
+    \label{fig:distribuzione_post_pulizia}
+\end{figure}
+
+Questa operazione di pulizia ha permesso di \textbf{eliminare il 8.5\% delle istanze} che avrebbero introdotto rumore nell'addestramento, preservando al contempo le 1.823 istanze di firmatari mancini che un'analisi meno attenta avrebbe erroneamente scartato.
+
+\subsection{Bilanciamento del Dataset}
+
+Dopo la pulizia degli errori di rilevamento, il dataset presenta ancora uno sbilanciamento nella distribuzione dei campioni per classe: alcune classi contano solo 4 campioni, altre fino a 23. Per garantire che il modello apprenda in modo uniforme tutti i segni, è stato applicato un bilanciamento basato su due soglie:
+
+\begin{itemize}
+    \item \textbf{Soglia minima ($< 12$ campioni):} le classi con meno di 12 campioni sono state eliminate completamente. Con così pochi esempi, la rete neurale non disporrebbe di sufficiente variabilità per generalizzare il pattern del segno.
+    \item \textbf{Target massimo ($> 15$ campioni):} le classi con più di 15 campioni sono state ridotte a esattamente 15, eliminando casualmente i campioni in eccesso. Questo evita che classi sovra-rappresentate ricevano un peso sproporzionato durante l'addestramento.
+\end{itemize}
+
+Le soglie sono state scelte analizzando la distribuzione post-pulizia: il nucleo del dataset si concentra nel range 12--15 campioni, che corrisponde alla fascia intorno alla mediana (14). In questo modo, la maggioranza delle classi (2.063 su 2.344) non subisce alcuna modifica.
+
+Le operazioni di bilanciamento hanno prodotto i seguenti risultati:
+
+\begin{itemize}
+    \item \textbf{383 classi eliminate} (3.832 campioni totali): classi con meno di 12 campioni.
+    \item \textbf{281 classi ridotte} a 15 campioni (401 campioni rimossi): classi originariamente con 16--23 campioni.
+    \item \textbf{2.063 classi invariate}: già nel range 12--15.
+\end{itemize}
+
+Il dataset bilanciato risultante è descritto nella tabella seguente:
+
+\begin{center}
+\begin{tabular}{lr}
+\hline
+\textbf{Metrica} & \textbf{Valore} \\
+\hline
+Classi (segni distinti) & 2.344 \\
+Campioni totali & 32.435 \\
+Media campioni per classe & 13.8 \\
+Mediana campioni per classe & 14 \\
+Deviazione standard & 1.04 \\
+Minimo campioni & 12 \\
+Massimo campioni & 15 \\
+\hline
+\end{tabular}
+\end{center}
+
+La deviazione standard è scesa da 1.9 a \textbf{1.04}, confermando un dataset significativamente più omogeneo. La distribuzione finale, mostrata in Figura~\ref{fig:distribuzione_bilanciata}, evidenzia come tutte le classi rientrino ora in un range ristretto di soli 4 valori (12--15 campioni).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{distribuzione_bilanciata}
+    \caption{Distribuzione bilanciata dei campioni per classe. Tutte le classi contengono tra 12 e 15 campioni.}
+    \label{fig:distribuzione_bilanciata}
+\end{figure}

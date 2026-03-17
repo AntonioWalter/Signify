@@ -1,0 +1,41 @@
+% ============================================================
+% CAPITOLO 2 - IL DATASET: ASL CITIZEN
+% ============================================================
+
+\section{Il Dataset: ASL Citizen}
+
+Per l'addestramento del modello di Signify è stato selezionato il dataset \textbf{ASL Citizen} \cite{desai2024aslcitizen}, il più grande dataset pubblico per il riconoscimento di segni isolati (\textit{Isolated Sign Language Recognition}, ISLR) nella Lingua dei Segni Americana.
+
+\subsection{Creazione del Dataset}
+
+ASL Citizen è stato sviluppato da un team di ricercatori della \textbf{Microsoft Research} e di diverse università americane, con il coinvolgimento attivo di membri sordi nel gruppo di lavoro \cite{desai2024aslcitizen}.
+
+La raccolta dei dati è avvenuta tramite una \textbf{piattaforma di crowdsourcing} appositamente progettata: i firmatari, tutti sordi o con problemi d'udito, hanno registrato i propri video autonomamente nei loro ambienti domestici. Per ogni segno, i partecipanti visualizzavano prima un video dimostrativo eseguito da un modello ASL altamente competente, e successivamente registravano la propria versione del segno.
+
+Il vocabolario dei segni è stato standardizzato utilizzando \textbf{ASL-LEX} \cite{asllex2017}, un database linguistico che fornisce identificatori univoci e analisi fonologica per ogni segno, eliminando ambiguità nelle annotazioni.
+
+\subsection{Composizione}
+
+Il dataset contiene:
+\begin{itemize}
+    \item \textbf{83.399 video} di segni isolati.
+    \item \textbf{2.731 segni distinti} (\textit{gloss}).
+    \item \textbf{52 firmatari} sordi o con problemi d'udito, provenienti da 16 stati americani, con un'esperienza nell'uso dell'ASL compresa tra 2 e 65 anni \cite{desai2024aslcitizen}.
+\end{itemize}
+
+Essendo stato raccolto in ambienti reali e non in laboratorio, il dataset presenta una naturale varietà di condizioni di illuminazione, sfondi, risoluzioni e angolazioni della webcam --- caratteristiche essenziali per addestrare un modello robusto in contesti d'uso reali.
+
+Il dataset include split predefiniti per training, validation e test che sono \textbf{signer-independent}: i firmatari nel set di test non compaiono mai nel training \cite{desai2024aslcitizen}. Questo garantisce che il modello venga valutato sulla capacità di riconoscere segni eseguiti da persone mai viste durante l'addestramento. Gli split sono inoltre stratificati per genere.
+
+\subsection{Attendibilità}
+
+L'attendibilità del dataset è supportata da diversi fattori:
+
+\begin{enumerate}
+    \item \textbf{Pubblicazione peer-reviewed:} il dataset è stato presentato alla conferenza \textbf{NeurIPS} (\textit{Advances in Neural Information Processing Systems}) \cite{desai2024aslcitizen}, una delle sedi scientifiche più prestigiose nel campo del Machine Learning.
+
+    \item \textbf{Raccolta etica:} tutti i dati sono stati raccolti con \textbf{consenso informato} e il protocollo ha ricevuto l'approvazione di un \textbf{Institutional Review Board} (IRB) \cite{desai2024aslcitizen}.
+
+    \item \textbf{Standardizzazione linguistica:} l'uso di ASL-LEX \cite{asllex2017} come riferimento garantisce coerenza e precisione nelle annotazioni, a differenza di altri dataset che soffrono di etichette inconsistenti.
+
+\end{enumerate}

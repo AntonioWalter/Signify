@@ -1,0 +1,26 @@
+% ============================================================
+% CAPITOLO 9 - CONCLUSIONI E RINGRAZIAMENTI
+% ============================================================
+
+\section{Conclusioni e Sviluppi Futuri}
+
+Il progetto \textbf{Signify} ha dimostrato la fattibilità di un sistema di riconoscimento della lingua dei segni americana (ASL) basato esclusivamente su computer vision e architetture neurali leggere, eliminando la necessità di sensori hardware costosi o ingombranti. L'integrazione di \textit{MediaPipe Holistic} per l'estrazione dei landmark e di una rete \textit{LSTM con meccanismo di Attention} ha permesso di ottenere prestazioni solide nella classificazione di segni isolati, gettando le basi per strumenti di comunicazione realmente inclusivi.
+
+L'analisi dei risultati ha confermato che, mentre il solo modello visivo può presentare ambiguità tra gesti simili, l'approccio ibrido con correzione semantica (NLP) è la chiave per elevare l'accuratezza a livelli utilizzabili nel quotidiano.
+
+\subsection{Sviluppi Futuri}
+Nonostante i traguardi raggiunti, il percorso verso una traduzione fluida e universale presenta ancora ampi margini di miglioramento:
+
+\begin{itemize}
+    \item \textbf{Ottimizzazione dell'estrazione Live-Web:} Attualmente, l'estrazione dei punti chiave tramite \textit{Mediapipe} in ambiente browser può risultare carente o instabile in condizioni di scarsa illuminazione o con background complessi. Future iterazioni potrebbero prevedere l'uso di modelli di estrazione personalizzati e ottimizzati tramite WebAssembly (WASM) per una maggiore stabilità temporale dei landmark.
+    \item \textbf{Modelli NLP avanzati per la frase:} L'integrazione NLP presentata come \textit{Proof of Concept} può essere estesa a veri e propri modelli di \textit{Neural Machine Translation} (NMT) capaci di gestire non solo la correzione lessicale, ma anche la complessa grammatica della lingua dei segni (che differisce sensibilmente da quella parlata), permettendo la composizione di frasi articolate e naturali.
+\end{itemize}
+
+\vspace{2cm}
+
+\section*{Ringraziamenti}
+\addcontentsline{toc}{section}{Ringraziamenti}
+
+Giunto alla conclusione di questo percorso, desidero rivolgere un sincero ringraziamento ai professori del corso di \textbf{Machine Learning} della laurea triennale in Informatica dell'Università degli Studi di Salerno. Gli insegnamenti e le competenze trasmesse durante il corso sono stati fondamentali per fornirmi gli strumenti tecnici e teorici necessari per affrontare e modellare la complessità di questo progetto.
+
+Un ringraziamento speciale va a chiunque abbia dedicato del tempo per leggere questo lavoro. Questo progetto nasce dalla volontà di unire tecnologia e inclusività, con l'obiettivo di fornire un piccolo contributo alla risoluzione di una problematica reale che coinvolge milioni di persone nel mondo.

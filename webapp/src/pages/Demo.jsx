@@ -184,7 +184,7 @@ export default function Demo() {
               onClick={() => { resetDemo(); setSelectedPhrase(phrase) }}
               disabled={isPlaying}
             >
-              {phrase.label}
+              {phrase[`label_${lang}`]}
             </button>
           ))}
         </div>

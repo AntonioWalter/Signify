@@ -1,0 +1,117 @@
+% ============================================================
+% CAPITOLO 6 - IMPLEMENTAZIONE E ADDESTRAMENTO
+% ============================================================
+
+\section{Implementazione del Modello}
+
+Dopo aver descritto la scelta teorica nel capitolo precedente, questa sezione analizza l'implementazione pratica dell'architettura \textbf{LSTM + Attention} e del ciclo di addestramento. Tutto il codice sorgente è stato scritto in linguaggio \textit{Python} avvalendosi del framework \textit{PyTorch}.
+
+\subsection{Preparazione dei Dati (Dataset Pipeline)}
+L'efficacia di una rete neurale dipende fortemente dalla correttezza dei dati in ingresso. Per questo motivo è stata sviluppata una classe dedicata (\texttt{SignLanguageDataset}) per caricare e strutturare le sequenze video.
+
+In precedenza, da ogni video analizzato con MediaPipe, sono state estratte le coordinate spaziali chiave. In particolare, per ogni frame del video possediamo:
+\begin{itemize}
+    \item \textbf{Corpo (Pose):} 33 punti (coordinate x, y) per un totale di 66 valori.
+    \item \textbf{Viso (Face):} 21 punti scelti per catturare le espressioni (66 valori).
+    \item \textbf{Mani (Mano Destra e Sinistra):} 21 punti per mano (coordinate x, y, z) per un totale di 126 valori.
+\end{itemize}
+L'unione di queste coordinate crea un vettore di \textbf{258 feature} (numeri) che rappresenta l'esatta conformazione del corpo in quel singolo fotogramma.
+
+I video possiedono tuttavia durate molto variabili. Dato che le reti ricorrenti standard lavorano meglio con sequenze di dimensione fissa, è stato scelto di standardizzare tutti gli input a \textbf{30 frame} (circa un secondo animato). Questo avviene tramite un \textbf{campionamento uniforme}: se un video dura 60 frame, lo script ne preleva uno ogni due, mantenendo intatto l'andamento del movimento reale ma scartando frame ridondanti. In caso di video troppo corti, viene applicata una tecnica di riempimento (\textit{padding}) clonando le code finali.
+
+\subsection{L'Architettura LSTMAttention}
+Il modello costruito su PyTorch (\texttt{model.py}) si suddivide in blocchi consecutivi.
+
+\subsubsection{Lo Strato di Attention (AttentionLayer)}
+In un video di 30 frame ci sono istanti irrilevanti (come le braccia che si alzano) e istanti chiave (l'esecuzione vera e propria del segno). Il modello deve imparare autonomamente \textit{quali frame pesare di più}. Questo compito è svolto dalla classe \texttt{AttentionLayer}:
+
+\begin{lstlisting}[language=Python, caption={Implementazione dello strato di Attention in PyTorch}, label={code:attention}]
+class AttentionLayer(nn.Module):
+    def __init__(self, hidden_size):
+        super(AttentionLayer, self).__init__()
+        # Piccola rete neurale che calcola un punteggio per ogni frame
+        self.attention = nn.Sequential(
+            nn.Linear(hidden_size, hidden_size // 2), 
+            nn.Tanh(),                                  
+            nn.Linear(hidden_size // 2, 1)              
+        )
+
+    def forward(self, lstm_outputs):
+        # 1. Punteggio grezzo: (batch_size, num_frames, 1)
+        scores = self.attention(lstm_outputs).squeeze(-1)
+
+        # 2. Pesi percentuali: normalizzazione Softmax (0-1)
+        weights = F.softmax(scores, dim=1)
+
+        # 3. Vettore di Contesto: media pesata dei frame originali
+        context = torch.bmm(weights.unsqueeze(1), lstm_outputs).squeeze(1)
+
+        return context, weights
+\end{lstlisting}
+
+Analizziamo il metodo \texttt{forward}:
+\begin{itemize}
+    \item L'input \texttt{lstm\_outputs} rappresenta la sequenza di 30 frame elaborata dalla rete neurale.
+    \item Nella \textbf{fase 1}, ogni frame subisce una trasformazione algebrica che restituisce uno \texttt{score} numerico. Più la rete calcola come "informativo" quel momento, più alto è il numero.
+    \item Nella \textbf{fase 2}, l'operazione \texttt{Softmax} interviene per trasformare questi "punteggi liberi" in delle mere probabilità percentuali, facendo sì che la somma di tutti e 30 sia sempre pari al 100\% (o 1.0). Questi determinano i \textit{pesi}.
+    \item Nella \textbf{fase 3}, tramite una moltiplicazione matriciale (\texttt{torch.bmm}), il valore originario del frame viene moltiplicato per il suo peso. I frame poco rilevanti moltiplicati per ~0 si azzereranno, per converso quelli nevralgici domineranno. Dalla somma uscirà un vettore unico finale (\texttt{context}) che, in modo estremamente focalizzato, riporterà e descriverà all'algoritmo nient'altro che la postura significativa dell'intero segno.
+\end{itemize}
+
+\subsubsection{Il Modello Principale (LSTMAttention)}
+Lo strato dell'Attention viene a questo punto integrato nella struttura temporale della memoria vera e propria prima di giungere alla votazione della classificazione.
+
+\begin{lstlisting}[language=Python, caption={Integrazione della LSTM e dell'Attentionlayer}, label={code:lstm}]
+class LSTMAttention(nn.Module):
+    def __init__(self, input_size=258, hidden_size=128, num_classes=2344):
+        super(LSTMAttention, self).__init__()
+        
+        # 1. LSTM Bidirezionale 
+        self.lstm = nn.LSTM(
+            input_size=input_size, hidden_size=hidden_size,
+            num_layers=2, batch_first=True, bidirectional=True
+        )
+
+        lstm_output_size = hidden_size * 2
+        
+        # 2. Layer di Attention visto in precendanza
+        self.attention = AttentionLayer(lstm_output_size)
+        
+        # 3. Classificatore finale
+        self.classifier = nn.Sequential(
+            nn.Dropout(0.3),
+            nn.Linear(lstm_output_size, hidden_size * 2),
+            nn.BatchNorm1d(hidden_size * 2),
+            nn.ReLU(),
+            nn.Linear(hidden_size * 2, num_classes)
+        )
+
+    def forward(self, x):
+        # Elaborazione temporale (batch, 30 frames, hidden_size*2)
+        lstm_out, _ = self.lstm(x)
+
+        # Compressione tramite Attention
+        context, attention_weights = self.attention(lstm_out)
+
+        # La classe predetta in classifica uscira' dallo strato lineare
+        output = self.classifier(context)
+
+        return output, attention_weights
+\end{lstlisting}
+
+\begin{itemize}
+    \item \textbf{1. LSTM Bidirezionale:} Prima di tutto la sequenza da 258 coordinate passa attraverso l'LSTM. Essendo impostata \textit{bidirectional}, la rete osserva le transizioni dell'utente sia in avanti (come di consueto) che al rovescio (risalendo dall'ultimo frame al primo) per coglierne perfettamente l'andamento del tempo.
+    \item \textbf{2. AttentionLayer:} Il risultato (l'esperienza accumulata per ogni frame dalla memoria) è passata allo strato descritto prima in cui si riassumono forzatamente tutti e 30 i valori estraendo unicamente la \textit{postura importante} (\texttt{context}).
+    \item \textbf{3. Classificatore:} In ultima istanza, si interroga questo vettore riassuntivo passandolo alle equazioni di estrazione lineare (\texttt{nn.Linear}), che si cureranno di indovinare a quale classe gestuale appartenga il vocabolo, esprimendo l'output finale: 2.344 voti, di cui la probabilità numerica più alta decreterà la classificazione stimata del gesto. In quest'ultima \texttt{Sequential} notiamo l'uso estensivo di \texttt{Dropout(0.3)}: spegne casualmente il 30\% dei neuroni bloccando sul nascere l'\textit{Overfitting} (il vizio della rete di non apprendere o di imparare il tracciato a memoria invece che studiarne la regola), rendendola più robusta nel caso di esami esterni futuri.
+\end{itemize}
+
+\subsection{Processo di Addestramento (Training Loop)}
+Avendo costruito il modello, l'ultimo traguardo è la fase pratica di allenamento, programmata e implementata in \texttt{train.py}.
+Dovendo fare imparare al modello le 2.344 categorie a partire dalla più completa ignoranza, il ciclo itera svariate volte (\textit{Epoche}) sull'intero storico del dataset. In base alle standardizzazioni del paradigma di Deep Learning moderno, alla rete si propongono \textit{n} esempi insieme in minigruppi detti \textit{batch}. Su ogni loop si eseguono fedelmente 4 meccanismi di base:
+\begin{enumerate}
+    \item \textbf{Forward Pass:} Il modello fa una previsione partendo dai dati forniti ma estrapolando (specie ai primi giri) risultati probabilistici pessimi o casuali (ad esempio \textit{"Al 30\% il vocabolo mostrato del video significa Tigre, al 4\% Gatto e al 60\% Albero"}).
+    \item \textbf{Loss Function (Calcolo dell'Errore):} Attraverso la matematica (nello script specificata tramite \textit{CrossEntropyLoss}), PyTorch paragona la sfilza di \textit{Target} sparati prima con il \textit{Ground Truth} corrispondente in cartella. Ad esempio sa che il video ritrae ineluttabilmente la parola "Ciao", di conseguenza ricalibrerà il tasso dell'errore indicando quanto e dove ha peccato.
+    \item \textbf{Backward Pass:} Grazie alla potente derivazione del software si naviga a ritroso; per ogni incrocio chimico della rete, PyTorch calcola le direttrici matematiche precise di chi, come, e per quale motivo e quota abbia attivamente remato per produrre l'esito errato di quel particolare campione statistico.
+    \item \textbf{Step di Ottimizzazione:} Affidata unicamente all'algoritmo esterno \textbf{AdamW}, la fase di upgrade si occupa letteralmente e aggressivamente del perfezionamento e affinamento in cascata di ogni parametro incriminato poc'anzi avvalendosi pure della logica del decadimento numerico (Weight Decay).
+\end{enumerate}
+
+Tramite l'utilizzo di un set di Validazione a margine di ogni epoca, l'algoritmo viene monitorato. Conclusi gli ultimi aggiustamenti della retta di apprendimento (\textit{Learning Rate}) o del blocco condizionato qualora si percepisse una stagnazione (\textit{Early Stopping}), le variabili strutturali del modello vengono permanentemente codificate in un archivio finale \texttt{.pt} pronte e funzionanti per il \textit{Testing}.

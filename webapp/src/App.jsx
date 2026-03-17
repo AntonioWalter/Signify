@@ -16,6 +16,7 @@ export default function App() {
   const [errorMsg, setErrorMsg] = useState('')
 
   const [theme, setTheme] = useState('dark')
+  const [lang, setLang] = useState('it')
   const [vocabIt, setVocabIt] = useState({})
   
   const UI_STRINGS = {
@@ -176,8 +177,8 @@ export default function App() {
 
   const translate = (key) => {
     if (!key) return ''
-    // 1. Check UI strings first
-    const ui = UI_STRINGS[lang][key.toLowerCase()]
+    // 1. Check UI strings first (using lowercase key for lookup)
+    const ui = UI_STRINGS[lang]?.[key.toLowerCase()]
     if (ui) return ui
     
     // 2. Fallback to vocab if not en
@@ -190,7 +191,7 @@ export default function App() {
       <div className="app">
         <header className="header">
           <div className="logo" onClick={() => setPage('home')} style={{ cursor: 'pointer' }}>
-            <img src="logosignify.png" alt="Signify Logo" className="logo-icon" />
+            <img src={`${import.meta.env.BASE_URL}logosignify.png`} alt="Signify Logo" className="logo-icon" />
           </div>
           
           <nav className="nav">

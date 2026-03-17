@@ -141,7 +141,7 @@ export default function Home({ onNavigate }) {
           </div>
           <div className="tech-visual">
             <img
-              src="sign_language_user.png"
+              src={`${import.meta.env.BASE_URL}sign_language_user.png`}
               alt="Person using sign language at a laptop"
               style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }}
             />

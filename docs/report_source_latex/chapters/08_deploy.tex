@@ -1,0 +1,49 @@
+% ============================================================
+% CAPITOLO 8 - DEPLOY E INTERFACCIA UTENTE
+% ============================================================
+
+\section{Messa in Produzione e Interfaccia Utente}
+
+La fase conclusiva del progetto ``Signify'' ha riguardato l'ingegnerizzazione del modello in un'applicazione web moderna, fruibile in tempo reale direttamente dal browser senza la necessità di installare software aggiuntivo. 
+
+\subsection{Architettura del Frontend (Vite + React)}
+Il sistema di traduzione è stato integrato in una \textbf{Progressive Web App (PWA)} sviluppata con \textit{React} e gestita tramite il build tool \textit{Vite}, scelto per la sua estrema velocità di compilazione e gestione dei moduli. 
+
+L'architettura del frontend si appoggia alle seguenti tecnologie:
+\begin{itemize}
+    \item \textbf{Mediapipe Holistic:} Utilizzato per l'estrazione dei landmark in tempo reale direttamente sul client (edge computing), riducendo la latenza e garantendo la privacy dell'utente.
+    \item \textbf{ONNX Runtime Web:} Il modello LSTM addestrato in PyTorch è stato convertito nel formato standard \textit{ONNX} per essere eseguito con accelerazione hardware (WebGL/WebGPU) all'interno del browser.
+    \item \textbf{Tailwind CSS:} Per la realizzazione di un'interfaccia utente pulita, accessibile e completamente reattiva.
+\end{itemize}
+
+\subsection{Responsive Design e Prova su Dispositivi}
+L'applicazione è stata progettata seguendo il paradigma \textit{Mobile-First}, garantendo un'esperienza d'uso ottimale sia su desktop che su dispositivi mobili (Smartphone e Tablet). Questo è stato reso possibile grazie alla natura flessibile del CSS e all'ottimizzazione del carico computazionale dei modelli di Computer Vision.
+
+Nelle figure seguenti è possibile osservare il comportamento dell'interfaccia su diverse risoluzioni, verificate tramite i \textit{Chrome DevTools}:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{DevTools localhost 5173}
+    \caption{Visualizzazione Desktop dell'interfaccia di traduzione. Il pannello laterale (HUD) mostra la probabilità del segno rilevato e la cronologia della frase.}
+    \label{fig:deploy_desktop}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{DevTools localhost iPad Air (1)}
+        \caption{Layout su iPad Air.}
+        \label{fig:deploy_ipad}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{DevTools localhost iPhone 14 Pro Max}
+        \caption{Layout su iPhone 14 Pro Max.}
+        \label{fig:deploy_iphone}
+    \end{minipage}
+\end{figure}
+
+\subsection{Strategia di Deploy}
+Il deploy dell'applicativo è stato effettuato tramite \textbf{GitHub Pages}, sfruttando le \textit{GitHub Actions} per l'automazione del processo di build e distribuzione (CI/CD). Questa scelta garantisce una distribuzione globale tramite CDN e una manutenzione semplificata del codice sorgente.
