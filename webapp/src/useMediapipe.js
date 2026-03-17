@@ -123,17 +123,10 @@ export function useMediapipe({ videoRef, canvasRef, onFrame, enabled }) {
         return
       }
 
-      // ─── Preprocessing: normalizzazione luminosità ─────────────────────────
-      // Disegniamo il video su un canvas temporaneo con filtri CSS per correggere
-      // il controluce e le condizioni di scarsa illuminazione tipiche di una webcam
-      // puntata verso una finestra.
-      const octx = offscreen.getContext('2d')
-      octx.filter = 'brightness(1.4) contrast(1.2)'
-      octx.drawImage(video, 0, 0, offscreen.width, offscreen.height)
-      octx.filter = 'none'
-
-      // Invia il frame preprocessato (luminosità aumentata) al modello Holistic
-      await holistic.send({ image: offscreen })
+      // Invia il frame originale al modello Holistic. Inviare direttamente il 'video'
+      // risolve i problemi su mobile dove l'aspect ratio (es. 480x640) veniva deformato
+      // dal canvas offscreen 640x480, impedendo al modello di trovare i punti.
+      await holistic.send({ image: video })
 
       // Disegna i risultati
       const results = latestResultsRef.current

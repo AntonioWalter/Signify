@@ -20,7 +20,6 @@ export async function loadModel(onProgress) {
 
     onProgress?.('Scaricamento modello (49MB)...')
     window.ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/'
-    window.ort.env.wasm.numThreads = 1 // Forza single-thread per problemi di SharedArrayBuffer su GitHub Pages
     
     // Proviamo a bypassare la cache per assicurarci di avere il file corretto
     const resModel = await fetch(`${import.meta.env.BASE_URL}models/signify_lstm.onnx`, { cache: 'no-store' })
@@ -34,20 +33,20 @@ export async function loadModel(onProgress) {
     }
 
     onProgress?.('Inizializzazione AI (WebGL/WASM)...')
-    // Tentativo primario con WASM (più stabile su tutti i PC e laptop)
+    // Tentativo primario con provider multipli (WebGL preferito, WASM come fallback nativo)
+    // Non forziamo numThreads o ottimizzazioni aggressive per evitare blocchi o "SharedArrayBuffer" issues
     try {
       session = await window.ort.InferenceSession.create(modelBuffer, {
-        executionProviders: ['wasm'],
-        graphOptimizationLevel: 'all'
+        executionProviders: ['webgl', 'wasm']
       })
-      console.log('Backend WASM inizializzato con successo')
+      console.log('Backend AI (WebGL/WASM) inizializzato con successo')
     } catch (e) {
-      console.warn('WASM Fallito, provo WebGL...', e)
-      onProgress?.('WASM fallito, provo WebGL...')
+      console.warn('Inizializzazione fallita, uso WASM di base...', e)
+      onProgress?.('WebGL/WASM falliti, ripiego su WASM base...')
       session = await window.ort.InferenceSession.create(modelBuffer, {
-        executionProviders: ['webgl']
+        executionProviders: ['wasm']
       })
-      console.log('Backend WebGL inizializzato')
+      console.log('Backend WASM di ripiego inizializzato')
     }
     
     onProgress?.('Sistema Pronto!')
