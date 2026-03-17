@@ -22,6 +22,7 @@ const TEXTS = {
     toolTrainerDesc: 'Esercitati con il manichino 3D. Seguiremo i tuoi movimenti e ti daremo feedback in tempo reale.',
     datasetTitle: `Il Dataset e l'Intelligenza dietro Signify`,
     datasetBody: `Il cuore pulsante del progetto è un modello di Deep Learning basato su Reti Neurali. Un ringraziamento speciale va agli autori del dataset originale ASL Citizen (Microsoft / Aweigh et al., Kaggle), che ha fornito migliaia di video annotati per oltre 2000 segni. Ho utilizzato MediaPipe per estrarre i landmark e trasformarli in sequenze 3D. Per rendere Signify fruibile in Italia, ho tradotto l'intero vocabolario in Italiano.`,
+    neuralNetworks: "Reti Neurali",
     footerText: `© 2026 Antonio Walter De Fusco — Signify Project`,
   },
   en: {
@@ -43,6 +44,7 @@ const TEXTS = {
     toolTrainerDesc: 'Practice with the 3D mannequin. We will track your movements and give you real-time feedback.',
     datasetTitle: 'The Dataset and Intelligence behind Signify',
     datasetBody: 'At the core of the project is a Deep Learning model based on Neural Networks. Special thanks to the authors of the original ASL Citizen dataset (Microsoft / Aweigh et al., Kaggle), which provided thousands of annotated videos for over 2000 signs. MediaPipe was used to extract landmarks and transform them into 3D sequences. To make Signify usable in Italy, the entire vocabulary was translated into Italian.',
+    neuralNetworks: "Neural Networks",
     footerText: '© 2026 Antonio Walter De Fusco — Signify Project',
   }
 }
@@ -131,7 +133,7 @@ export default function Home({ onNavigate }) {
             <h2>{t.datasetTitle}</h2>
             <p>{t.datasetBody}</p>
             <div className="tech-tags">
-              <span className="tech-tag">Reti Neurali</span>
+              <span className="tech-tag">{t.neuralNetworks}</span>
               <span className="tech-tag">ASL Citizen Dataset</span>
               <span className="tech-tag">MediaPipe</span>
               <span className="tech-tag">ONNX</span>

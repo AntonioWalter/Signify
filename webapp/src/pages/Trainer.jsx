@@ -179,16 +179,16 @@ export default function Trainer() {
             <div className="icon-wrapper">
               <CheckCircle size={80} />
             </div>
-            <h3>Segno Indovinato!</h3>
-            <p>Ottimo lavoro, hai completato correttamente il gesto.</p>
-            <button className="next-btn" onClick={nextTarget} style={{ marginTop: '30px' }}>PROSSIMO SEGNO ⏭</button>
+            <h3>{translate('sign_guessed')}</h3>
+            <p>{translate('great_job')}</p>
+            <button className="next-btn" onClick={nextTarget} style={{ marginTop: '30px' }}>{translate('next_sign')} ⏭</button>
           </div>
         </div>
       )}
 
       <div className="trainer-header" style={{ marginBottom: '8px' }}>
-        <h2 style={{ fontSize: '28px', marginBottom: '8px' }}>Istruttore Interattivo</h2>
-        <p style={{ fontSize: '14px' }}>Guarda il manichino ed esegui il gesto — la registrazione parte <strong>automaticamente</strong> quando le mani si muovono.</p>
+        <h2 style={{ fontSize: '28px', marginBottom: '8px' }}>{translate('interactive_instructor')}</h2>
+        <p style={{ fontSize: '14px' }}>{translate('trainer_subtitle')}</p>
       </div>
 
       {/* Row 1: Videos Side-by-Side */}
@@ -198,7 +198,7 @@ export default function Trainer() {
         <div className="glass-card" style={{ padding: '20px', display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
             <p className="card-title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Target size={16} /> Segno da Eseguire
+              <Target size={16} /> {translate('target_sign')}
             </p>
             <div className="target-label" style={{ margin: 0, fontSize: '28px', lineHeight: 1 }}>{cleanTargetWord}</div>
           </div>
@@ -212,7 +212,7 @@ export default function Trainer() {
               <Youtube size={16} /> YouTube
             </a>
             <button className="ctrl-btn" style={{ fontSize: '12px', padding: '6px 14px' }} onClick={skipTarget}>
-              <SkipForward size={14} /> Salta
+              <SkipForward size={14} /> {translate('skip')}
             </button>
           </div>
         </div>
@@ -220,7 +220,7 @@ export default function Trainer() {
         {/* Right: webcam */}
         <div className="glass-card" style={{ padding: '20px', display: 'flex', flexDirection: 'column' }}>
           <p className="card-title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-            <Camera size={16} /> La Tua Telecamera
+            <Camera size={16} /> {translate('your_camera')}
           </p>
           
           <div className="webcam-container" style={{ flex: 1, minHeight: 0, padding: 0, overflow: 'hidden', position: 'relative' }}>
@@ -229,16 +229,16 @@ export default function Trainer() {
             {!active && (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '12px', color: 'var(--text-muted)' }}>
                 <Camera size={40} opacity={0.5} />
-                <p style={{ fontSize: '13px' }}>Avvia la webcam per iniziare</p>
+                <p style={{ fontSize: '13px' }}>{translate('start_prompt')}</p>
               </div>
             )}
             <div className="webcam-overlay" style={{ padding: '12px' }}>
               <div className="status-badge" style={{ borderColor: captureStatus === 'recording' ? 'rgba(239,68,68,0.6)' : undefined }}>
                 <div className={`status-dot ${active ? 'active' : ''}`} style={{ background: captureStatus === 'recording' ? '#ef4444' : undefined }} />
-                {active ? (captureStatus === 'recording' ? '⏺ REC' : 'Live') : 'Off'}
+                {active ? (captureStatus === 'recording' ? translate('rec') : translate('live')) : translate('off')}
               </div>
               <button className={`ctrl-btn ${active ? 'danger' : 'primary'}`} style={{ padding: '6px 14px', fontSize: '13px' }} onClick={() => setActive(v => !v)}>
-                {active ? <><Square size={14} /> Stop</> : <><PlaySquare size={14} /> Avvia</>}
+                {active ? <><Square size={14} /> {translate('stop')}</> : <><PlaySquare size={14} /> {translate('start')}</>}
               </button>
             </div>
           </div>
@@ -250,7 +250,7 @@ export default function Trainer() {
         
         {/* Status */}
         <div className="glass-card" style={{ padding: '20px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <p className="card-title" style={{ marginBottom: '8px' }}>🎬 Rilevamento</p>
+          <p className="card-title" style={{ marginBottom: '8px' }}>🎬 {translate('detection')}</p>
           <div style={{ margin: '8px 0', transition: 'all 0.3s', display: 'flex', justifyContent: 'center' }}>
             {statusInfo.icon}
           </div>
@@ -266,7 +266,7 @@ export default function Trainer() {
                 }} />
               </div>
               <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px' }}>
-                {motionLevel > MOTION_START_THRESHOLD ? '🟥 In Registrazione' : motionLevel > MOTION_STOP_THRESHOLD ? '🟡 Quasi…' : '🟢 In Attesa'}
+                {motionLevel > MOTION_START_THRESHOLD ? `🟥 ${translate('recording')}` : motionLevel > MOTION_STOP_THRESHOLD ? `🟡 ...` : `🟢 ${translate('waiting_motion')}`}
               </p>
             </div>
           )}
@@ -277,32 +277,32 @@ export default function Trainer() {
           padding: '20px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
           borderColor: (prediction && !isSignFound) ? (isCorrect ? 'rgba(16,185,129,0.5)' : 'rgba(239,68,68,0.4)') : undefined
         }}>
-          <p className="card-title" style={{ marginBottom: '8px' }}>💡 Output</p>
+          <p className="card-title" style={{ marginBottom: '8px' }}>💡 {translate('output')}</p>
           {prediction && !isSignFound ? (
             <>
               <div style={{ color: isCorrect ? 'var(--success)' : 'var(--error)', marginBottom: '8px' }}>
                 {isCorrect ? <CheckCircle size={36} /> : <XCircle size={36} />}
               </div>
               <p className={`feedback-text ${isCorrect ? 'success' : 'fail'}`} style={{ fontSize: '17px', margin: 0, lineHeight: 1.2 }}>
-                {isCorrect ? 'Corretto!' : `Rilevato: ${getCleanTranslatedWord(prediction[0].word)}`}
+                {isCorrect ? translate('correct') : `${translate('detected_label')} ${getCleanTranslatedWord(prediction[0].word)}`}
               </p>
               {!isCorrect && (
                 <p style={{ fontSize: '12px', marginTop: '6px', color: 'var(--text-secondary)', lineHeight: 1.2 }}>
-                  Riprova — gesto più lento e preciso
+                  {translate('trainer_retry_prompt')}
                 </p>
               )}
             </>
           ) : (
             <>
               <div style={{ color: 'var(--text-muted)' }}><Activity size={36} /></div>
-              <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '12px' }}>Esegui il gesto per la verifica</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginTop: '12px' }}>{translate('start_gesture')}</p>
             </>
           )}
         </div>
 
         {/* Top 5 candidates */}
         <div className="glass-card" style={{ padding: '20px', display: 'flex', flexDirection: 'column' }}>
-          <p className="card-title" style={{ marginBottom: '12px' }}>📊 Top 5 Candidati</p>
+          <p className="card-title" style={{ marginBottom: '12px' }}>📊 {translate('top_5_candidates')}</p>
           <div className="candidates-list" style={{ gap: '6px', overflowY: 'auto' }}>
             {prediction && !isSignFound ? prediction.slice(0, 5).map((c, i) => (
               <div key={i} className="candidate-item" style={{ padding: '6px 10px', ...(c.word.toUpperCase() === targetWord ? { borderColor: 'rgba(16,185,129,0.5)', background: 'rgba(16,185,129,0.1)' } : {})}}>
@@ -311,7 +311,7 @@ export default function Trainer() {
                 <span className="candidate-score" style={{ fontSize: '11px', padding: '2px 6px' }}>{(c.p * 100).toFixed(0)}%</span>
               </div>
             )) : (
-              <p style={{ color: 'var(--text-muted)', fontSize: '12px', textAlign: 'center', padding: '30px 0', margin: 'auto' }}>Nessuna misurazione recente</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '12px', textAlign: 'center', padding: '30px 0', margin: 'auto' }}>{translate('no_recent_m')}</p>
             )}
           </div>
         </div>
@@ -324,17 +324,17 @@ export default function Trainer() {
           <div className="score-item">
             <Trophy size={24} className="icon" style={{ color: 'var(--accent-success)' }} />
             <p className="score-value">{score.correct}</p>
-            <p className="score-key">Corretti</p>
+            <p className="score-key">{translate('signs_correct')}</p>
           </div>
           <div className="score-item">
             <TargetIcon size={24} className="icon" />
             <p className="score-value">{score.total}</p>
-            <p className="score-key">Tentati</p>
+            <p className="score-key">{translate('signs_attempted')}</p>
           </div>
           <div className="score-item">
             <Percent size={24} className="icon" style={{ color: accuracy >= 70 ? 'var(--accent-success)' : '#f59e0b' }} />
             <p className="score-value">{accuracy}%</p>
-            <p className="score-key">Accuratezza</p>
+            <p className="score-key">{translate('accuracy')}</p>
           </div>
         </div>
       </div>

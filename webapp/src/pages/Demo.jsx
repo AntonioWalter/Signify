@@ -7,18 +7,18 @@ import { Play, RotateCcw, Sparkles, BrainCircuit, Loader2, ChevronRight, Clapper
 
 // ─── Frasi pre-definite con segni verificati ──────────────────────────────────
 const DEMO_PHRASES = [
-  { label: '🚗 La ragazza guida l\'auto', signs: ['girl', 'drive', 'car'], emoji: '🚗' },
-  { label: '💃 Il ragazzo balla',        signs: ['boy', 'dance'], emoji: '💃' },
-  { label: '🐕 Il cane salta',          signs: ['dog1', 'jump'], emoji: '🐕' },
-  { label: '🐱 Il gatto beve acqua',     signs: ['cat3', 'drink2', 'water'], emoji: '🐱' },
-  { label: '⚽ Il bambino gioca',      signs: ['boy', 'play'], emoji: '⚽' },
+  { label_it: '🚗 La ragazza guida l\'auto', label_en: '🚗 The girl drives the car', signs: ['girl', 'drive', 'car'], emoji: '🚗' },
+  { label_it: '💃 Il ragazzo balla',        label_en: '💃 The boy dances',        signs: ['boy', 'dance'], emoji: '💃' },
+  { label_it: '🐕 Il cane salta',          label_en: '🐕 The dog jumps',          signs: ['dog1', 'jump'], emoji: '🐕' },
+  { label_it: '🐱 Il gatto beve acqua',     label_en: '🐱 The cat drinks water',     signs: ['cat3', 'drink2', 'water'], emoji: '🐱' },
+  { label_it: '⚽ Il bambino gioca',      label_en: '⚽ The boy plays',      signs: ['boy', 'play'], emoji: '⚽' },
 ]
 
 // Durata approssimativa di ogni segno in ms (30 frame × 40ms cadenza)
 const SIGN_DURATION_MS = 30 * 40  // 1200ms per default
 
 export default function Demo() {
-  const { translate } = useContext(AppContext)
+  const { translate, lang } = useContext(AppContext)
 
   // Selezione frase
   const [selectedPhrase, setSelectedPhrase] = useState(null)
@@ -159,17 +159,17 @@ export default function Demo() {
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
           <Clapperboard size={28} color="var(--accent-primary)" />
           <h2 style={{ fontSize: '28px', fontWeight: 900, letterSpacing: '-1px', margin: 0 }}>
-            Live Demo – Linguaggio dei Segni
+            {translate('demo')}
           </h2>
         </div>
         <p style={{ color: 'var(--text-secondary)', fontSize: '15px', margin: 0 }}>
-          Scegli una frase: il manichino la eseguirà e il modello AI la tradurrà in tempo reale
+          {translate('demo_subtitle')}
         </p>
       </div>
 
       {/* ── Selezione Frasi ─────────────────────────────────────────────────── */}
       <div className="glass-card" style={{ padding: '24px' }}>
-        <p className="card-title" style={{ margin: '0 0 16px' }}>1 · Seleziona una frase</p>
+        <p className="card-title" style={{ margin: '0 0 16px' }}>{translate('select_phrase')}</p>
         <div className="responsive-stack" style={{ flexDirection: 'row', flexWrap: 'wrap', gap: '12px' }}>
           {DEMO_PHRASES.map((phrase, i) => (
             <button
@@ -197,7 +197,7 @@ export default function Demo() {
           {/* Colonna Sinistra: Manichino */}
           <div className="glass-card" style={{ padding: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <p className="card-title" style={{ margin: 0 }}>2 · Animazione Segno</p>
+              <p className="card-title" style={{ margin: 0 }}>{translate('animation_sign')}</p>
               <div style={{ display: 'flex', gap: '8px' }}>
                 {/* Progress indicatori */}
                 {selectedPhrase.signs.map((s, i) => (
@@ -239,7 +239,7 @@ export default function Demo() {
             {currentSignIdx >= 0 && currentSignIdx < selectedPhrase.signs.length && (
               <div style={{ textAlign: 'center', marginTop: '12px' }}>
                 <span style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>
-                  Segno {currentSignIdx + 1}/{selectedPhrase.signs.length}:
+                  {translate('sign_rank')} {currentSignIdx + 1}/{selectedPhrase.signs.length}:
                 </span>
                 <span style={{ fontSize: '20px', fontWeight: 800, marginLeft: '8px', color: 'var(--accent-primary)' }}>
                   {getTranslated(selectedPhrase.signs[currentSignIdx])}
@@ -251,13 +251,13 @@ export default function Demo() {
             <div style={{ display: 'flex', gap: '10px', marginTop: '16px', justifyContent: 'center' }}>
               {!isPlaying && playState !== 'done' && (
                 <button className="ctrl-btn primary" style={{ padding: '10px 24px' }} onClick={startDemo}>
-                  <Play size={16} /> Avvia Demo
+                  <Play size={16} /> {translate('start')} Demo
                 </button>
               )}
               {isPlaying && (
                 <button className="ctrl-btn" style={{ padding: '10px 24px', opacity: 0.6 }} disabled>
                   <Loader2 size={16} className="animate-spin" /> 
-                  {playState === 'analyzing' ? 'BERT Rescoring...' : 'In esecuzione...'}
+                  {playState === 'analyzing' ? translate('bert_rescoring') : translate('recording')}
                 </button>
               )}
               {(isPlaying || playState === 'done') && (
@@ -273,10 +273,10 @@ export default function Demo() {
             
             {/* Predizioni per segno */}
             <div className="glass-card" style={{ padding: '20px' }}>
-              <p className="card-title" style={{ margin: '0 0 16px' }}>3 · Predizioni AI per Segno</p>
+              <p className="card-title" style={{ margin: '0 0 16px' }}>{translate('ai_predictions_sign')}</p>
               {predictions.length === 0 && (
                 <p style={{ color: 'var(--text-muted)', fontSize: '14px', textAlign: 'center', padding: '20px 0' }}>
-                  Le predizioni appariranno durante la riproduzione…
+                  {translate('no_recent_m')}
                 </p>
               )}
               {predictions.map((item, idx) => (
@@ -288,7 +288,7 @@ export default function Demo() {
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                     <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                      Segno {idx + 1}
+                      {translate('sign_rank')} {idx + 1}
                     </span>
                     <span style={{ fontSize: '16px', fontWeight: 800, color: 'var(--accent-primary)' }}>
                       {item.preds ? getTranslated(item.preds[0].word) : '???'}
@@ -315,16 +315,16 @@ export default function Demo() {
             {/* Frase BERT */}
             <div className="glass-card" style={{ padding: '20px' }}>
               <p className="card-title" style={{ margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Sparkles size={14} color="var(--accent-secondary)" /> 4 · Frase Corretta da BERT
+                <Sparkles size={14} color="var(--accent-secondary)" /> {translate('bert_demo_phrase')}
               </p>
               {bertLoading && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-secondary)', fontSize: '14px' }}>
-                  <Loader2 size={16} className="animate-spin" /> BERT sta elaborando la frase…
+                  <Loader2 size={16} className="animate-spin" /> {translate('bert_rescoring')}
                 </div>
               )}
               {!bertLoading && bertPhrase.length === 0 && (
                 <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>
-                  La frase corretta apparirà al termine della demo…
+                  {translate('select_phrase_prompt')}
                 </p>
               )}
               {!bertLoading && bertPhrase.length > 0 && (
@@ -341,7 +341,7 @@ export default function Demo() {
             {/* Info segni nella frase */}
             {selectedPhrase && (
               <div className="glass-card" style={{ padding: '16px' }}>
-                <p className="card-title" style={{ margin: '0 0 10px' }}>Segni in questa frase</p>
+                <p className="card-title" style={{ margin: '0 0 10px' }}>{translate('signs_in_this_phrase')}</p>
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   {selectedPhrase.signs.map((s, i) => (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -368,7 +368,7 @@ export default function Demo() {
         <div className="glass-card" style={{ padding: '60px', textAlign: 'center' }}>
           <Clapperboard size={64} opacity={0.2} style={{ marginBottom: '20px' }} />
           <p style={{ color: 'var(--text-muted)', fontSize: '16px' }}>
-            Seleziona una frase qui sopra per avviare la demo
+            {translate('select_phrase_prompt')}
           </p>
         </div>
       )}

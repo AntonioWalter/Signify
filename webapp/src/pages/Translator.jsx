@@ -234,7 +234,7 @@ export default function Translator() {
         {(bertLoading || !bertReady) && (
           <div className="glass-card" style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '12px', borderLeft: '4px solid #f59e0b' }}>
             <Loader2 className="animate-spin" size={20} color="#f59e0b" />
-            <span style={{ fontSize: '14px', fontWeight: 600 }}>Inizializzazione BERT Modello Linguistico... (Potrebbe richiedere un istante la prima volta)</span>
+            <span style={{ fontSize: '14px', fontWeight: 600 }}>{translate('bert_init')}</span>
           </div>
         )}
 
@@ -245,13 +245,13 @@ export default function Translator() {
           <div className="glass-card" style={{ padding: '20px', display: 'flex', flexDirection: 'column' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
               <p className="card-title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Camera size={16} /> Traduzione Live
+                <Camera size={16} /> {translate('live_translation')}
               </p>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                  <div className="meter-bg" style={{ width: '60px', height: '4px' }}>
                     <div className="meter-fill" style={{ width: `${Math.min(motionLevel/MOTION_START_THRESHOLD*100, 100)}%`, background: motionLevel > MOTION_START_THRESHOLD ? '#ef4444' : '#10b981'}} />
                  </div>
-                 <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 700 }}>{status.toUpperCase()}</span>
+                 <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 700 }}>{translate(status).toUpperCase()}</span>
               </div>
             </div>
 
@@ -282,7 +282,7 @@ export default function Translator() {
                   </div>
                   {sourceType === 'file' && active && (
                     <button className="ctrl-btn" style={{ padding: '6px 12px', fontSize: '12px' }} onClick={() => { setSourceType('webcam'); setVideoUrl(null); setActive(false); }}>
-                      <RefreshCcw size={14} /> Reset Sorgente
+                      <RefreshCcw size={14} /> {translate('reset_source')}
                     </button>
                   )}
                 </div>
@@ -296,10 +296,10 @@ export default function Translator() {
                     onChange={handleFileChange} 
                   />
                   <button className="ctrl-btn" style={{ padding: '6px 12px', fontSize: '12px' }} onClick={() => fileInputRef.current?.click()}>
-                    <PlaySquare size={14} /> Carica Video
+                    <PlaySquare size={14} /> {translate('load_video')}
                   </button>
                   <button className={`ctrl-btn ${active ? 'danger' : 'primary'}`} style={{ padding: '6px 14px', fontSize: '13px' }} onClick={() => { if(!active) setSourceType('webcam'); setActive(v => !v); }}>
-                    {active ? <><Square size={14} /> Stop</> : <><PlaySquare size={14} /> Avvia Webcam</>}
+                    {active ? <><Square size={14} /> {translate('stop')}</> : <><PlaySquare size={14} /> {translate('start_webcam')}</>}
                   </button>
                 </div>
               </div>
@@ -311,14 +311,14 @@ export default function Translator() {
             
             <div className="glass-card current-sign" style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <p className="card-title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', marginBottom: '12px' }}>
-                <BrainCircuit size={16} /> Output Visivo (Top-1)
+                <BrainCircuit size={16} /> {translate('visual_output')}
               </p>
               <div style={{ textAlign: 'center' }}>
                 <span className="sign-label" style={{ fontSize: '42px', minHeight: '60px' }}>
                   {status === 'analyzing' ? '...' : (top5.length > 0 ? getCleanTranslatedWord(top5[0].word) : '---')}
                 </span>
                 <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '8px' }}>
-                  {status === 'recording' ? 'Registrazione in corso...' : 'In attesa di movimento'}
+                  {status === 'recording' ? translate('recording') : translate('waiting_motion')}
                 </p>
               </div>
               {top5.length > 0 && (
@@ -326,31 +326,31 @@ export default function Translator() {
                   <div className="confidence-bar-bg">
                     <div className="confidence-bar" style={{ width: `${(top5[0].p * 100).toFixed(1)}%` }} />
                   </div>
-                  <p className="confidence-label">Confidenza: {(top5[0].p * 100).toFixed(1)}%</p>
+                  <p className="confidence-label">{translate('confidence')}: {(top5[0].p * 100).toFixed(1)}%</p>
                 </div>
               )}
             </div>
 
             <div className="glass-card" style={{ padding: '20px' }}>
               <p className="card-title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                <Sparkles size={16} color="var(--accent-secondary)" /> Frase Corretta da BERT
+                <Sparkles size={16} color="var(--accent-secondary)" /> {translate('bert_phrase')}
               </p>
               <div className="phrase-output" style={{ minHeight: '80px', padding: '16px', marginBottom: '12px', position: 'relative' }}>
                 {status === 'bert' && (
                     <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.2)', backdropFilter: 'blur(2px)', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', zIndex: 10 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'white', fontSize: '13px' }}>
-                            <Loader2 className="animate-spin" size={16} /> BERT Rescoring...
+                            <Loader2 className="animate-spin" size={16} /> {translate('bert_rescoring')}
                         </div>
                     </div>
                 )}
                 {phrase.length > 0
                   ? phrase.map((w, i) => <span key={i} className="phrase-word" style={{ fontSize: '15px', padding: '5px 12px' }}>{getCleanTranslatedWord(w)}</span>)
-                  : <span className="phrase-placeholder">Esegui i segni. La "Matrix of Solutions" BERT correggerà la frase...</span>
+                  : <span className="phrase-placeholder">{translate('move_hands_prompt')}</span>
                 }
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                 <button className="ctrl-btn danger" style={{ padding: '8px 16px', fontSize: '13px' }} onClick={clearPhrase}>
-                  <Trash2 size={14} /> Reset Frase
+                  <Trash2 size={14} /> {translate('reset_phrase')}
                 </button>
               </div>
             </div>
@@ -361,7 +361,7 @@ export default function Translator() {
         {/* Bottom Row: Top 5 Candidates horizontally */}
         <div className="glass-card" style={{ padding: '20px' }}>
           <p className="card-title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-            <ListOrdered size={16} /> Matrice dei Candidati (N-Best)
+            <ListOrdered size={16} /> {translate('candidate_matrix')}
           </p>
           <div className="candidates-list" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
             {top5.length > 0 ? top5.map((c, i) => (
@@ -372,7 +372,7 @@ export default function Translator() {
               </div>
             )) : (
               <p style={{ color: 'var(--text-muted)', fontSize: '13px', textAlign: 'center', padding: '20px 0', gridColumn: '1 / -1' }}>
-                Muovi le mani per avviare il riconoscimento automatico
+                {translate('move_hands_prompt')}
               </p>
             )}
           </div>
@@ -390,12 +390,12 @@ export default function Translator() {
           <div className="score-item">
             <Hash size={24} className="icon" />
             <p className="score-value">{phrase.length}</p>
-            <p className="score-key">Segni In Frase</p>
+            <p className="score-key">{translate('signs_in_phrase')}</p>
           </div>
           <div className="score-item">
             <Frame size={24} className="icon" />
             <p className="score-value">{frameCount}</p>
-            <p className="score-key">Frame Processati</p>
+            <p className="score-key">{translate('processed_frames')}</p>
           </div>
         </div>
       </div>
