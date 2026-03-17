@@ -1,52 +1,50 @@
-# Ambienti Virtuali Python
-venv/
-.venv/
-venv310/
-env/
-.venv_eval/
-
-# Artifacts di Python
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
-*.so
+.venv/
+.venv_eval/
+venv/
+env/
+*.log
 
-# Cartelle IDE
+# Node.js
+node_modules/
+webapp/node_modules/
+dist/
+webapp/dist/
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+.AppleDouble
+.LSOverride
+
+# IDEs
 .idea/
 .vscode/
+*.swp
+*.swo
 
-# Dati pesanti / ML Artifacts
-data/*
-!data/.gitkeep
-models_saved/
-results/
-notebooks/.ipynb_checkpoints/
-
-# LaTeX / Build
-*.aux
-*.bbl
-*.bcf
-*.blg
-*.fdb_latexmk
-*.fls
-*.ilg
-*.ind
-*.lof
-*.log
-*.lot
-*.out
-*.run.xml
-*.synctex.gz
-*.toc
-docs/main.pdf
-docs/latex/build/
-
-# Log e Zip
-*.log
+# Project Specific
 *.zip
-*.txt
-!requirements.txt
-!requirements_mac.txt
-
-# File Mac
-.DS_Store
+*.onnx.tmp
+temp_video.mp4
+/data/
+/results/
+/models_saved/
+/notebooks/.ipynb_checkpoints/
+/webapp/public/landmarks/*.json
+!/webapp/public/landmarks/girl.json
+!/webapp/public/landmarks/boy.json
+!/webapp/public/landmarks/dog1.json
+!/webapp/public/landmarks/cat3.json
+!/webapp/public/landmarks/drive.json
+!/webapp/public/landmarks/car.json
+!/webapp/public/landmarks/dance.json
+!/webapp/public/landmarks/jump.json
+!/webapp/public/landmarks/drink2.json
+!/webapp/public/landmarks/water.json
+!/webapp/public/landmarks/play.json

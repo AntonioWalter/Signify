@@ -1,0 +1,155 @@
+\begin{thebibliography}{10}
+
+\bibitem{who2024deafness}
+{World Health Organization}.
+\newblock Deafness and hearing loss -- fact sheet.
+\newblock
+  \url{https://www.who.int/news-room/fact-sheets/detail/deafness-and-hearing-loss},
+  2024.
+\newblock Ultimo accesso: Febbraio 2025.
+
+\bibitem{who2024hearingday}
+{World Health Organization}.
+\newblock World hearing day 2024: Changing mindsets -- let's make ear and
+  hearing care a reality for all.
+\newblock \url{https://www.who.int/campaigns/world-hearing-day/2024}, 2024.
+\newblock Ultimo accesso: Febbraio 2025.
+
+\bibitem{wfd2024signlanguage}
+{World Federation of the Deaf}.
+\newblock Our work -- sign language.
+\newblock \url{https://wfdeaf.org/our-work/}, 2024.
+\newblock Ultimo accesso: Febbraio 2025.
+
+\bibitem{edf2023barriers}
+{European Disability Forum}.
+\newblock Communication barriers faced by deaf and hard of hearing persons in
+  healthcare.
+\newblock \url{https://www.edf-feph.org/publications/}, 2023.
+\newblock Ultimo accesso: Febbraio 2025.
+
+\bibitem{hamiltonrelay2023}
+{Hamilton Relay}.
+\newblock 2023 communication access survey: Impact on career and daily life.
+\newblock
+  \url{https://www.prnewswire.com/news-releases/2023-communication-access-survey.html},
+  2023.
+\newblock Sondaggio sulle barriere comunicative per persone sorde e con
+  problemi d'udito.
+
+\bibitem{kumar2024slr}
+Ashish Kumar et~al.
+\newblock Recent advances in sign language recognition using deep learning: A
+  comprehensive survey.
+\newblock {\em Computers, Materials \& Continua}, 2024.
+\newblock Survey su approcci CNN-LSTM, Transformer e wearable per SLR.
+  \url{https://www.techscience.com/cmc/online/detail/21612}.
+
+\bibitem{rastgoo2024slrsurvey}
+Razieh Rastgoo, Kourosh Kiani, and Sergio Escalera.
+\newblock Sign language recognition: A deep survey.
+\newblock {\em Expert Systems with Applications}, 164:113794, 2024.
+\newblock \url{https://doi.org/10.1016/j.eswa.2020.113794}.
+
+\bibitem{lecun2015deeplearning}
+Yann LeCun, Yoshua Bengio, and Geoffrey Hinton.
+\newblock Deep learning.
+\newblock {\em Nature}, 521(7553):436--444, 2015.
+\newblock \url{https://doi.org/10.1038/nature14539}.
+
+\bibitem{sandler2018mobilenetv2}
+Mark Sandler, Andrew Howard, Menglong Zhu, Andrey Zhmoginov, and Liang-Chieh
+  Chen.
+\newblock Mobilenetv2: Inverted residuals and linear bottlenecks.
+\newblock In {\em IEEE/CVF Conference on Computer Vision and Pattern
+  Recognition (CVPR)}, pages 4510--4520, 2018.
+\newblock \url{https://doi.org/10.1109/CVPR.2018.00474}.
+
+\bibitem{hochreiter1997lstm}
+Sepp Hochreiter and J{\"u}rgen Schmidhuber.
+\newblock Long short-term memory.
+\newblock {\em Neural Computation}, 9(8):1735--1780, 1997.
+\newblock \url{https://doi.org/10.1162/neco.1997.9.8.1735}.
+
+\bibitem{vaswani2017attention}
+Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones,
+  Aidan~N. Gomez, {\L}ukasz Kaiser, and Illia Polosukhin.
+\newblock Attention is all you need.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)},
+  volume~30, 2017.
+\newblock \url{https://arxiv.org/abs/1706.03762}.
+
+\bibitem{ultralytics2023yolov8}
+{Ultralytics}.
+\newblock {YOLOv8}: State-of-the-art real-time object detection.
+\newblock \url{https://github.com/ultralytics/ultralytics}, 2023.
+\newblock Repository GitHub ufficiale.
+
+\bibitem{alrashidi2024asl}
+Meshal Alrashidi et~al.
+\newblock Real-time {ASL} alphabet recognition using {MediaPipe} and {YOLOv8}.
+\newblock {\em IEEE Access}, 2024.
+\newblock Accuratezza del 98\% nel riconoscimento dell'alfabeto ASL.
+  \url{https://www.sciencedaily.com/releases/2024/12/241219125404.htm}.
+
+\bibitem{mediapipe2020}
+Camillo Lugaresi, Jiuqiang Tang, Hadon Nash, Chris McClanahan, Esha Uboweja,
+  Michael Hays, Fan Zhang, Chuo-Ling Chang, Ming~Guang Yong, Juhyun Lee, et~al.
+\newblock {MediaPipe}: A framework for building perception pipelines.
+\newblock arXiv preprint arXiv:1906.08172, 2019.
+\newblock \url{https://arxiv.org/abs/1906.08172} -- Sito ufficiale:
+  \url{https://mediapipe.dev/}.
+
+\bibitem{opencv2000}
+Gary Bradski.
+\newblock The {OpenCV} library.
+\newblock \url{https://opencv.org/}, 2000.
+\newblock Libreria open-source di Computer Vision.
+
+\bibitem{tensorflow2015}
+Mart{\'\i}n Abadi et~al.
+\newblock {TensorFlow}: Large-scale machine learning on heterogeneous systems.
+\newblock \url{https://www.tensorflow.org/}, 2015.
+\newblock Software open-source per Machine Learning.
+
+\bibitem{tensorflowjs2018}
+{TensorFlow Team}.
+\newblock {TensorFlow.js}: Machine learning for the web and beyond.
+\newblock \url{https://www.tensorflow.org/js}, 2018.
+\newblock Libreria JavaScript per ML nel browser.
+
+\bibitem{desai2024aslcitizen}
+Aashaka Desai, Lauren Berger, Fyodor~O. Minakov, Vanessa Milan, Chinmay Singh,
+  Amelia Pumphrey, Richard~E. Ladner, Hal Daum{\'e}~III, Alex~X. Lu, Naomi~K.
+  Caselli, and Danielle Bragg.
+\newblock {ASL Citizen}: A community-sourced dataset for advancing isolated
+  sign language recognition.
+\newblock In {\em Advances in Neural Information Processing Systems (NeurIPS)},
+  2024.
+\newblock \url{https://arxiv.org/abs/2304.05934}.
+
+\bibitem{fang2017deepasl}
+Biyi Fang, Jillian Co, and Mi~Zhang.
+\newblock {DeepASL}: Enabling ubiquitous and non-intrusive word and
+  sentence-level sign language translation.
+\newblock In {\em ACM Conference on Embedded Networked Sensor Systems
+  (SenSys)}, pages 1--13, 2017.
+\newblock \url{https://doi.org/10.1145/3131672.3131693}.
+
+\bibitem{asllex2017}
+Naomi~K. Caselli, Zed~Sevcikova Sehyr, Ariel~M. Cohen-Goldberg, and Karen
+  Emmorey.
+\newblock {ASL-LEX}: A lexical database of {American Sign Language}.
+\newblock {\em Behavior Research Methods}, 49(2):784--801, 2017.
+\newblock \url{https://doi.org/10.3758/s13428-016-0742-0} -- Database:
+  \url{https://asl-lex.org/}.
+
+\bibitem{bahdanau2015attention}
+Dzmitry Bahdanau, Kyunghyun Cho, and Yoshua Bengio.
+\newblock Neural machine translation by jointly learning to align and
+  translate.
+\newblock In {\em International Conference on Learning Representations (ICLR)},
+  2015.
+\newblock \url{https://arxiv.org/abs/1409.0473}.
+
+\end{thebibliography}
