@@ -21,8 +21,8 @@ export async function loadModel(onProgress) {
     console.log('[Engine] Scaricamento modello (49MB)...')
     window.ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/'
     
-    // Proviamo a bypassare la cache per assicurarci di avere il file corretto
-    const resModel = await fetch(`${import.meta.env.BASE_URL}models/signify_lstm.onnx`, { cache: 'no-store' })
+    // Il file viene cachato dal browser per accessi successivi istantanei
+    const resModel = await fetch(`${import.meta.env.BASE_URL}models/signify_lstm.onnx`)
     if (!resModel.ok) throw new Error('File ONNX non trovato in public/models/')
     
     // Implementazione del download reader per tracciare la percentuale
