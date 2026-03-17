@@ -64,7 +64,7 @@ export default function Demo() {
     // Carichiamo i landmark del segno e li classifichiamo
     let preds = null
     try {
-      const res = await fetch(`./landmarks/${signName}.json`)
+      const res = await fetch(`${import.meta.env.BASE_URL}landmarks/${signName}.json`)
       const frames = await res.json()
       const WINDOW = 30
       // Campionamento a 30 frame (replicando np.linspace come in Python)

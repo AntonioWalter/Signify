@@ -14,7 +14,7 @@ export async function loadModel(onProgress) {
     console.log('ORT Version:', window.ort.version)
 
     onProgress?.('Caricamento vocabolario...')
-    const resVocab = await fetch('./models/vocab.json')
+    const resVocab = await fetch(`${import.meta.env.BASE_URL}models/vocab.json`)
     if (!resVocab.ok) throw new Error('Errore nel caricamento del vocabolario')
     vocab = await resVocab.json()
 
@@ -22,7 +22,7 @@ export async function loadModel(onProgress) {
     window.ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/'
     
     // Proviamo a bypassare la cache per assicurarci di avere il file corretto
-    const resModel = await fetch('./models/signify_lstm.onnx', { cache: 'no-store' })
+    const resModel = await fetch(`${import.meta.env.BASE_URL}models/signify_lstm.onnx`, { cache: 'no-store' })
     if (!resModel.ok) throw new Error('File ONNX non trovato in public/models/')
     
     const modelBuffer = await resModel.arrayBuffer()
