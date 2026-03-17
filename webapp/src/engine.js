@@ -18,15 +18,41 @@ export async function loadModel(onProgress) {
     if (!resVocab.ok) throw new Error('Errore nel caricamento del vocabolario')
     vocab = await resVocab.json()
 
-    onProgress?.('Scaricamento modello (49MB)...')
+    console.log('[Engine] Scaricamento modello (49MB)...')
     window.ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/'
     
     // Proviamo a bypassare la cache per assicurarci di avere il file corretto
     const resModel = await fetch(`${import.meta.env.BASE_URL}models/signify_lstm.onnx`, { cache: 'no-store' })
     if (!resModel.ok) throw new Error('File ONNX non trovato in public/models/')
     
-    const modelBuffer = await resModel.arrayBuffer()
-    console.log('Model Buffer Size:', modelBuffer.byteLength, 'bytes')
+    // Implementazione del download reader per tracciare la percentuale
+    const contentLength = resModel.headers.get('content-length')
+    const total = contentLength ? parseInt(contentLength, 10) : 49000000 // stima 49MB
+    let loaded = 0
+    
+    const reader = resModel.body.getReader()
+    const chunks = []
+    
+    while(true) {
+      const {done, value} = await reader.read()
+      if (done) break
+      chunks.push(value)
+      loaded += value.byteLength
+      const percent = Math.round((loaded / total) * 100)
+      console.log(`[Engine] Download: ${percent}% (${(loaded / 1024 / 1024).toFixed(1)}MB / ${(total / 1024 / 1024).toFixed(1)}MB)`)
+      onProgress?.(`Scaricamento modello: ${percent}%`, percent)
+    }
+    
+    console.log('[Engine] Costruzione buffer finale...')
+    // Uniamo i chunks
+    const modelBuffer = new Uint8Array(loaded)
+    let position = 0
+    for(let chunk of chunks) {
+      modelBuffer.set(chunk, position)
+      position += chunk.length
+    }
+    
+    console.log('[Engine] Model Buffer Size:', modelBuffer.byteLength, 'bytes')
     
     if (modelBuffer.byteLength < 1000000) {
       throw new Error(`File modello troppo piccolo (${modelBuffer.byteLength} bytes). Possibile download corrotto.`)

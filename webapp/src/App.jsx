@@ -13,6 +13,7 @@ export default function App() {
   const [page, setPage] = useState('home')
   const [modelStatus, setModelStatus] = useState('loading')
   const [loadingMsg, setLoadingMsg] = useState('Inizializzazione...')
+  const [loadingPercent, setLoadingPercent] = useState(0) // Nuovo stato
   const [errorMsg, setErrorMsg] = useState('')
 
   const [theme, setTheme] = useState('dark')
@@ -154,7 +155,10 @@ export default function App() {
   useEffect(() => {
     // Load model & italian vocab
     Promise.all([
-      loadModel((msg) => setLoadingMsg(msg)),
+      loadModel((msg, percent) => {
+        setLoadingMsg(msg)
+        if (percent !== undefined) setLoadingPercent(percent)
+      }),
       fetch(`${import.meta.env.BASE_URL}models/vocab.json`).then(r => r.json()).catch(() => ({})),
       fetch(`${import.meta.env.BASE_URL}models/vocab_it.json`).then(r => r.json()).catch(() => ({}))
     ])
@@ -226,9 +230,16 @@ export default function App() {
 
         <main className="main">
           {modelStatus === 'loading' && (
-            <div className="loading-screen">
+            <div className="loading-screen" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '20px' }}>
               <div className="spinner" />
-              <p className="loading-text">{loadingMsg}</p>
+              <div style={{ textAlign: 'center' }}>
+                <p className="loading-text" style={{ marginBottom: '8px' }}>{loadingMsg}</p>
+                {loadingPercent > 0 && loadingPercent < 100 && (
+                  <div style={{ width: '200px', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '10px', overflow: 'hidden' }}>
+                    <div style={{ width: `${loadingPercent}%`, height: '100%', background: 'var(--accent-primary)', transition: 'width 0.2s' }} />
+                  </div>
+                )}
+              </div>
             </div>
           )}
           {modelStatus === 'error' && (
