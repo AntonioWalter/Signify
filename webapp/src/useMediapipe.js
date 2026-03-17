@@ -2,7 +2,7 @@
 // Usa @mediapipe/holistic che è IDENTICO al Python mp.solutions.holistic.Holistic
 // Garantisce la stessa estrazione delle 258 feature usate nel training del modello
 import { useEffect, useRef, useCallback } from 'react'
-import * as mpHolistic from '@mediapipe/holistic'
+// La classe Holistic viene caricata globalmente via CDN in index.html
 
 const POSE_CONNECTIONS = [
   [11, 12], [11, 13], [13, 15], [12, 14], [14, 16], // Braccia
@@ -65,8 +65,13 @@ export function useMediapipe({ videoRef, canvasRef, onFrame, enabled }) {
 
   // Inizializzazione Holistic (uguale a Python)
   useEffect(() => {
-    // Fix per bundling in produzione: tenta diverse vie per trovare il costruttore
-    const HolisticConstructor = mpHolistic.Holistic || mpHolistic.default?.Holistic || mpHolistic
+    // Utilizziamo il costruttore caricato globalmente via script tag in index.html
+    // @ts-ignore
+    const HolisticConstructor = window.Holistic
+    if (!HolisticConstructor) {
+        console.error('Mediapipe Holistic non trovato! Verifica la connessione o lo script in index.html')
+        return
+    }
     const holistic = new HolisticConstructor({
       locateFile: (file) =>
         `https://cdn.jsdelivr.net/npm/@mediapipe/holistic@0.5.1675471629/${file}`
